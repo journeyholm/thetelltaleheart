@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Tell-Tale Heart</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A Poe-themed investigation game for The Tell-Tale Heart. Students study vocabulary, learn how Poe builds suspense, decode the eye, the heartbeat, and the floorboards, then build a case about the narrator.">
+<meta name="theme-color" content="#0c0908">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Tell-Tale Heart: An Investigation">
+<meta property="og:description" content="Vocabulary, suspense, and symbolism in Poe’s story. Build your case: can the narrator be trusted?">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230c0908'/%3E%3Cpath d='M12 20s-7-4.3-8.8-8.7C1.8 7.8 4 4.6 7.3 4.6c1.9 0 3.4 1 4.7 2.7 1.3-1.7 2.8-2.7 4.7-2.7 3.3 0 5.5 3.2 4.1 6.7C19 15.7 12 20 12 20z' fill='%23d23a2e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Alegreya:ital,wght@0,400;0,600;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* Layout: one candle-lit chamber. A sticky bar carries the narrator's heart and the tools;
+   below it a single centred column holds whichever "room" of the house the student is in. */
+:root{
+  color-scheme: dark;
+  --night:#0c0908; --chamber:#15100e; --panel:#1c1512; --panel-hi:#271d18;
+  --parchment:#ecdfc6; --ash:#ab9b8b; --line:rgba(236,223,198,.14);
+  --blood:#a3231d; --blood-hi:#d23a2e; --lantern:#e3aa4c; --eye:#a3c4d2;
+  --good:#93c178; --bad:#e85d50; --ink:#1a110d;
+  --wood-a:#2c1e15; --wood-b:#23170f;
+  --font-display:"IM Fell English SC","IM Fell English",Georgia,serif;
+  --font-title:"IM Fell English",Georgia,serif;
+  --font-body:"Alegreya",Georgia,"Times New Roman",serif;
+  --font-type:"Special Elite","Courier New",monospace;
+  --dread:0; --beat:.83s; --r:5px;
+  --mx:50vw; --my:50vh;
+}
+body[data-skin="lantern"]{--night:#120c06;--chamber:#1b1209;--panel:#23170c;--panel-hi:#2f2010;--blood:#b4511b;--blood-hi:#e57f2f;--lantern:#f4c461}
+body[data-skin="paleeye"]{--night:#080b0d;--chamber:#0f1418;--panel:#141b20;--panel-hi:#1c262c;--blood:#3e6e85;--blood-hi:#6fa6bf;--lantern:#c4dde7}
+body[data-skin="bloodmoon"]{--night:#0d0405;--chamber:#170708;--panel:#210a0b;--panel-hi:#2e0e10;--blood:#c3191a;--blood-hi:#ff4436;--lantern:#ffa070}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--night); color:var(--parchment);
+  font-family:var(--font-body); font-size:18px; line-height:1.55;
+  min-height:100vh; overflow-x:hidden;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+  padding-block:0 48px;
+  transition:background-color .6s;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--night)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(227,170,76,.18)}
+:focus-visible{outline:3px solid var(--lantern);outline-offset:2px}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.1;margin:0;text-wrap:balance}
+p{margin:0}
+b,strong{font-weight:700}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- the house itself: floorboards, candlelight, dread ---------- */
+.bg{position:fixed;inset:0;pointer-events:none;z-index:-1}
+.bg-floor{
+  background:
+    repeating-linear-gradient(90deg, transparent 0 158px, rgba(0,0,0,.55) 158px 160px),
+    repeating-linear-gradient(0deg, transparent 0 517px, rgba(0,0,0,.45) 517px 519px),
+    linear-gradient(90deg, var(--wood-a), var(--wood-b) 50%, var(--wood-a));
+  opacity:.32;
+}
+.bg-candle{background:radial-gradient(ellipse 70% 55% at 50% 18%, rgba(227,170,76,.13), transparent 70%);animation:flicker 5s infinite steps(1)}
+.bg-vignette{background:radial-gradient(ellipse at 50% 40%, transparent 35%, rgba(0,0,0,.88) 100%)}
+.bg-dread{background:radial-gradient(ellipse at 50% 50%, transparent 30%, var(--blood) 140%);opacity:calc(var(--dread) * .9);animation:dreadpulse var(--beat) infinite}
+@keyframes flicker{0%{opacity:1}12%{opacity:.82}14%{opacity:1}48%{opacity:.9}50%{opacity:1}77%{opacity:.78}79%{opacity:.95}}
+@keyframes dreadpulse{0%,100%{transform:scale(1)}12%{transform:scale(1.025)}24%{transform:scale(1)}36%{transform:scale(1.012)}}
+.lantern-cursor{position:fixed;inset:0;pointer-events:none;z-index:40;background:radial-gradient(circle 240px at var(--mx) var(--my), transparent 0, rgba(0,0,0,.5) 100%)}
+
+/* ---------- top bar ---------- */
+/* Desktop & tablet: [Home + title] [pulse, gold] ........ [tool tiles][Teacher].
+   Phone: row 1 = Home + pulse + gold, row 2 = six equal tiles, each icon over a label. */
+.topbar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:50;
+  display:flex; align-items:center; gap:10px;
+  padding-block:10px; margin-bottom:8px;
+  background:linear-gradient(var(--night) 80%, transparent);
+}
+.bar-left{display:flex;align-items:center;gap:12px;min-width:0}
+.bar-title{font-family:var(--font-display);font-size:1.25rem;letter-spacing:.02em;white-space:nowrap}
+.bar-title em{color:var(--blood-hi);font-style:normal}
+.bar-status{display:flex;align-items:center;gap:8px}
+.bar-tools{display:flex;align-items:stretch;gap:6px;margin-left:auto}
+.tile{
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  min-width:64px;min-height:54px;padding:6px 8px;
+  background:rgba(0,0,0,.42);border:1px solid var(--line);border-radius:var(--r);color:var(--parchment);
+  font-family:var(--font-type);font-size:.72rem;letter-spacing:.05em;line-height:1;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:border-color .2s,color .2s,background .2s;
+}
+.tile .ico svg{width:22px;height:22px;display:block}
+.tile:active{background:rgba(227,170,76,.16)}
+.home-tile{border-color:rgba(227,170,76,.45);color:var(--lantern)}
+.teacher-tile{background:var(--parchment);color:var(--ink);border-color:var(--parchment);font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.teacher-tile:active{background:var(--lantern)}
+@media (hover:hover){
+  .tile:hover{border-color:var(--lantern);color:var(--lantern);background:rgba(227,170,76,.08)}
+  .teacher-tile:hover{background:var(--lantern);color:var(--ink)}
+}
+/* Hover labels (mouse and keyboard focus only; touch devices already show the text under each icon) */
+@media (hover:hover){
+  [data-tip]{position:relative}
+  [data-tip]::after{
+    content:attr(data-tip);position:absolute;top:calc(100% + 8px);left:50%;
+    transform:translate(-50%,-4px);width:max-content;max-width:240px;white-space:normal;
+    background:var(--parchment);color:var(--ink);font-family:var(--font-body);font-size:.88rem;font-weight:400;
+    letter-spacing:0;line-height:1.35;text-align:left;padding:7px 11px;border-radius:4px;
+    box-shadow:0 8px 24px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:70;
+  }
+  [data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;transform:translate(-50%,0)}
+  [data-tip-edge="left"]::after{left:0;transform:translate(0,-4px)}
+  [data-tip-edge="left"]:hover::after,[data-tip-edge="left"]:focus-visible::after{transform:translate(0,0)}
+  [data-tip-edge="right"]::after{left:auto;right:0;transform:translate(0,-4px)}
+  [data-tip-edge="right"]:hover::after,[data-tip-edge="right"]:focus-visible::after{transform:translate(0,0)}
+}
+.heart-hud{display:flex;align-items:center;gap:8px;padding:4px 12px 4px 6px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.35);font-family:var(--font-type);font-size:.9rem;font-variant-numeric:tabular-nums}
+.heart-hud svg{width:26px;height:26px;color:var(--blood-hi);animation:beat var(--beat) infinite;filter:drop-shadow(0 0 calc(var(--dread)*10px) var(--blood-hi))}
+.heart-hud .bpm-label{color:var(--ash);font-size:.75rem}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.25)}24%{transform:scale(1)}36%{transform:scale(1.12)}}
+.gold-hud{display:flex;align-items:center;gap:6px;font-family:var(--font-type);font-size:.95rem;color:var(--lantern);padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
+.gold-hud svg{width:18px;height:18px}
+.gold-hud.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.25)}}
+@media (max-width:1060px){ .bar-title{display:none} }
+@media (max-width:860px){ .heart-hud .bpm-label{display:none} .tile{min-width:56px;padding:6px 6px} }
+@media (max-width:700px){
+  .topbar{display:grid;grid-template-columns:auto 1fr;gap:8px}
+  .bar-status{justify-self:end}
+  .bar-tools{grid-column:1 / -1;margin-left:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+  .bar-tools .tile{min-width:0;min-height:50px;padding:6px 2px;font-size:.66rem;letter-spacing:.02em}
+  .tile .ico svg{width:20px;height:20px}
+  .home-tile{flex-direction:row;min-height:40px;padding:6px 12px;gap:8px;font-size:.78rem}
+}
+@media (max-width:360px){
+  .bar-tools{gap:3px}
+  .bar-tools .tile{font-size:.56rem;letter-spacing:0}
+  .heart-hud,.gold-hud{padding-inline:8px}
+}
+
+/* ---------- shared pieces ---------- */
+main{max-width:940px;margin:0 auto}
+.room{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,4vw,36px);box-shadow:0 20px 60px rgba(0,0,0,.55);position:relative}
+.kicker{font-family:var(--font-type);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lantern)}
+.muted{color:var(--ash)}
+.small{font-size:.88rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--panel-hi);color:var(--parchment);padding:11px 20px;border-radius:var(--r);font-weight:600;transition:transform .15s, background .2s, border-color .2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);border-color:var(--lantern)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--blood);border-color:var(--blood-hi);color:#fff4ea}
+.btn-primary:hover:not(:disabled){background:var(--blood-hi)}
+.btn-link{background:none;border:0;color:var(--ash);padding:4px 0;font-size:.95rem}
+.btn-link:hover{color:var(--lantern)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.epigraph{font-family:var(--font-title);font-style:italic;font-size:clamp(1.05rem,2.6vw,1.3rem);color:var(--parchment);opacity:.9;max-width:60ch}
+.passage{
+  position:relative; margin:0 0 18px; padding:16px 20px;
+  font-family:var(--font-title); font-size:clamp(1.08rem,2.5vw,1.28rem); line-height:1.5;
+  background:rgba(0,0,0,.32); border-left:3px solid var(--blood-hi); border-radius:0 var(--r) var(--r) 0;
+  overflow:hidden;
+}
+.passage b{color:var(--lantern);font-weight:400;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.blank{display:inline-block;min-width:5.5em;border-bottom:2px solid var(--lantern);color:var(--lantern);text-align:center;font-style:normal}
+.prompt{font-size:1.12rem;font-weight:700;margin-bottom:14px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;color:var(--parchment);transition:border-color .2s, background .2s, transform .15s}
+.opt:hover:not(:disabled){border-color:var(--lantern);background:rgba(227,170,76,.07)}
+.opt .key{flex:none;width:26px;height:26px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-family:var(--font-type);font-size:.8rem;color:var(--ash)}
+.opt.correct{border-color:var(--good);background:rgba(147,193,120,.13)}
+.opt.correct .key{background:var(--good);color:var(--ink);border-color:var(--good)}
+.opt.wrong{border-color:var(--bad);background:rgba(232,93,80,.1);opacity:.75;animation:shake .4s}
+.opt.wrong .key{background:var(--bad);color:var(--ink);border-color:var(--bad)}
+.opt.removed{opacity:.25;text-decoration:line-through}
+.opt:disabled{cursor:default}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.feedback{margin-top:14px}
+.fb{border-radius:var(--r);padding:12px 16px;border:1px solid var(--line);display:grid;gap:10px}
+.fb.good{border-color:var(--good);background:rgba(147,193,120,.09)}
+.fb.bad{border-color:var(--bad);background:rgba(232,93,80,.08)}
+.fb-title{font-family:var(--font-display);font-size:1.2rem}
+.fb.good .fb-title{color:var(--good)}
+.fb.bad .fb-title{color:var(--bad)}
+.mcq-foot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mcq-foot .oil-btn{margin-left:auto}
+.key-hint{font-family:var(--font-type);font-size:.78rem}
+@media (hover:none){ .key-hint{display:none} }
+.oil-btn{background:none;border:1px dashed var(--line);color:var(--ash);border-radius:var(--r);padding:5px 10px;font-size:.82rem}
+.oil-btn:hover:not(:disabled){color:var(--lantern);border-color:var(--lantern)}
+.oil-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- title screen ---------- */
+.title-screen{display:grid;justify-items:center;text-align:center;gap:18px;padding-top:clamp(10px,4vh,40px)}
+.evil-eye{width:min(380px,82vw);height:auto;filter:drop-shadow(0 0 40px rgba(163,196,210,.18))}
+.evil-eye .lid{transform-box:view-box}
+.evil-eye .lid-top{animation:lidTop 7s infinite}
+.evil-eye .lid-bot{animation:lidBot 7s infinite}
+@keyframes lidTop{0%,90%,100%{transform:translateY(-84px)}94%{transform:translateY(0)}}
+@keyframes lidBot{0%,90%,100%{transform:translateY(84px)}94%{transform:translateY(0)}}
+.evil-eye .iris{transition:transform .25s ease-out}
+.game-title{font-family:var(--font-display);font-size:clamp(2.6rem,9vw,5.2rem);letter-spacing:.01em;line-height:.95}
+.game-title .the{display:block;font-size:.4em;letter-spacing:.3em;color:var(--ash)}
+.game-title .heart-word{color:var(--blood-hi)}
+.register{display:grid;gap:10px;width:min(440px,100%);background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:var(--r);text-align:left}
+.register label{font-family:var(--font-type);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lantern)}
+.register input{background:rgba(0,0,0,.4);border:0;border-bottom:2px solid var(--ash);padding:10px 4px;font-family:var(--font-type);font-size:1.15rem}
+.register input:focus{outline:none;border-bottom-color:var(--lantern)}
+
+/* ---------- hub ---------- */
+.hub-head{display:grid;gap:10px;margin-bottom:22px}
+.hub-head h2{font-size:clamp(1.9rem,5vw,2.8rem)}
+.doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
+.door{
+  position:relative;display:grid;gap:10px;align-content:start;text-align:left;
+  background:linear-gradient(180deg, var(--panel-hi), var(--panel));
+  border:1px solid var(--line);border-radius:var(--r) var(--r) 2px 2px;padding:22px 20px 18px;
+  color:var(--parchment);min-height:230px;transition:transform .2s, border-color .2s, box-shadow .2s;
+}
+.door:hover:not(.locked){transform:translateY(-4px);border-color:var(--lantern);box-shadow:0 14px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(227,170,76,.2)}
+.door .door-icon{width:46px;height:46px;color:var(--lantern)}
+.door .door-icon svg{width:100%;height:100%}
+.door h3{font-size:1.6rem}
+.door .act-no{font-family:var(--font-type);font-size:.78rem;letter-spacing:.14em;color:var(--ash);text-transform:uppercase}
+.door .knob{position:absolute;right:16px;top:50%;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #f6d38c, #8a5d1d);box-shadow:0 0 8px rgba(227,170,76,.4)}
+.door.locked{opacity:.55;cursor:not-allowed}
+.door.done{border-color:rgba(147,193,120,.5)}
+.pips{display:flex;gap:6px;margin-top:auto}
+.pip{width:22px;height:6px;border-radius:3px;background:rgba(236,223,198,.15)}
+.pip.on{background:var(--good)}
+.hub-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.continue-btn{margin-top:16px}
+.save-warn{margin-top:14px;border:1px solid var(--bad);border-radius:var(--r);padding:10px 12px;color:var(--parchment);background:rgba(232,93,80,.1);font-size:.92rem;max-width:62ch}
+.review-box{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:6px;max-width:62ch;background:rgba(0,0,0,.2)}
+.review-chips{display:flex;flex-wrap:wrap;gap:6px}
+.review-chips span{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.85rem;color:var(--parchment)}
+.overall{display:flex;align-items:center;gap:12px;font-family:var(--font-type);font-size:.85rem;color:var(--ash)}
+.bar{flex:1;height:8px;background:rgba(236,223,198,.12);border-radius:4px;overflow:hidden;min-width:120px}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--blood),var(--lantern));border-radius:4px;transition:width .6s}
+
+/* ---------- act page ---------- */
+.act-head{display:grid;gap:12px;margin-bottom:22px}
+.act-head h2{font-size:clamp(2rem,6vw,3rem)}
+.stage-list{display:grid;gap:12px}
+.stage-item{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;text-align:left;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;color:var(--parchment)}
+.stage-item:hover:not(:disabled){border-color:var(--lantern)}
+.stage-item:disabled{opacity:.45;cursor:not-allowed}
+.stage-item .num{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);font-family:var(--font-display);font-size:1.1rem}
+.stage-item.done .num{background:var(--good);color:var(--ink);border-color:var(--good)}
+.stage-item h3{font-size:1.25rem}
+.stage-item .meta{font-family:var(--font-type);font-size:.8rem;color:var(--ash);white-space:nowrap}
+.stars{color:var(--lantern);letter-spacing:2px}
+
+/* ---------- stage frame ---------- */
+.stage-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.stage-head .grow{flex:1;min-width:0}
+.stage-head h2{font-size:clamp(1.5rem,4vw,2rem)}
+.progress-text{font-family:var(--font-type);font-size:.85rem;color:var(--ash);font-variant-numeric:tabular-nums}
+.progress-line{height:4px;background:rgba(236,223,198,.1);border-radius:2px;margin-bottom:20px;overflow:hidden}
+.progress-line i{display:block;height:100%;background:var(--blood-hi);transition:width .4s}
+.section-banner{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.section-banner .ico{width:44px;height:44px;color:var(--lantern);flex:none}
+.section-banner .ico svg{width:100%;height:100%}
+.section-banner h3{font-size:1.5rem}
+
+/* flip cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:12px}
+.vcard{perspective:900px;background:none;border:0;padding:0;text-align:left;color:var(--parchment)}
+.vc-inner{display:grid;transition:transform .55s;transform-style:preserve-3d;min-height:220px}
+.vcard.flipped .vc-inner{transform:rotateY(180deg)}
+.vc-face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;align-content:center;gap:8px}
+.vc-front{background:linear-gradient(160deg,var(--panel-hi),rgba(0,0,0,.4));justify-items:center;text-align:center}
+.vc-front .w{font-family:var(--font-title);font-size:1.6rem}
+.vc-front .pos{font-family:var(--font-type);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ash)}
+.vcard.seen .vc-front{border-color:rgba(147,193,120,.5)}
+.vc-back{transform:rotateY(180deg);background:#efe2c8;color:var(--ink);align-content:start;font-size:.92rem;line-height:1.4}
+.vc-back .def{font-weight:700;font-size:1rem}
+.vc-back .q{font-family:var(--font-title);font-style:italic}
+.vc-back .q b{color:#8a1c16;font-style:normal}
+.vc-back .ex{font-size:.85rem;opacity:.8}
+
+/* lantern round */
+.lantern-passage{min-height:150px;display:flex;align-items:center;touch-action:pan-y}
+.darkness{position:absolute;inset:0;background:#030202;pointer-events:none;
+  -webkit-mask-image:radial-gradient(circle 95px at var(--lx,50%) var(--ly,50%), transparent 0, transparent 55%, #000 100%);
+  mask-image:radial-gradient(circle 95px at var(--lx,50%) var(--ly,50%), transparent 0, transparent 55%, #000 100%);
+  transition:opacity .6s}
+.lit .darkness{opacity:0}
+.lantern-hint{font-size:.88rem;color:var(--ash);margin:-6px 0 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn-lantern{background:rgba(227,170,76,.14);border-color:var(--lantern);color:var(--lantern);padding:8px 14px}
+.btn-lantern svg{width:18px;height:18px}
+.btn-lantern:hover:not(:disabled){background:rgba(227,170,76,.24)}
+.clue-row{display:grid;gap:8px;justify-items:start;margin:-4px 0 14px}
+.btn-clue{background:rgba(163,196,210,.1);border-color:var(--eye);color:var(--eye);padding:8px 14px}
+.btn-clue svg{width:18px;height:18px}
+.btn-clue:hover:not(:disabled){background:rgba(163,196,210,.2)}
+.clue-text{border:1px dashed var(--eye);border-radius:var(--r);padding:10px 14px;background:rgba(163,196,210,.06)}
+.clue-text strong{color:var(--eye)}
+
+/* break between rounds */
+.intermission{display:grid;gap:14px;justify-items:start;padding-block:6px}
+.intermission .big-score{font-family:var(--font-display);font-size:3rem;line-height:1}
+.round-dots{display:flex;gap:8px;align-items:center;font-family:var(--font-type);font-size:.8rem;color:var(--ash)}
+.round-dots i{width:34px;height:8px;border-radius:4px;background:rgba(236,223,198,.15)}
+.round-dots i.on{background:var(--good)}
+
+/* match */
+.match-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.beetle-timer{display:flex;align-items:center;gap:8px;font-family:var(--font-type);font-variant-numeric:tabular-nums}
+.beetle-timer svg{width:28px;height:28px;color:var(--ash)}
+.beetle-timer.ticking svg{animation:tick 1s steps(2) infinite}
+@keyframes tick{50%{transform:rotate(8deg)}}
+.match-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:10px}
+.match-col{display:grid;gap:8px;align-content:start}
+.mitem{background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;text-align:left;color:var(--parchment);min-height:48px}
+.mitem.word{font-family:var(--font-title);font-size:1.15rem}
+.mitem.def{font-size:.92rem;line-height:1.3}
+.mitem.sel{border-color:var(--lantern);background:rgba(227,170,76,.12)}
+.mitem.matched{border-color:var(--good);opacity:.35;cursor:default}
+.mitem.nope{animation:shake .4s;border-color:var(--bad)}
+
+/* toolkit */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px}
+.tcard{text-align:left;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;color:var(--parchment);display:grid;gap:8px;align-content:start}
+.tcard h3{font-size:1.3rem;display:flex;justify-content:space-between;gap:8px}
+.tcard .tbody{display:none;gap:8px}
+.tcard.open{border-color:var(--lantern)}
+.tcard.open .tbody{display:grid}
+.tcard .ex{font-family:var(--font-title);font-style:italic;border-left:2px solid var(--blood-hi);padding-left:10px}
+.tcard .seen-dot{width:10px;height:10px;border-radius:50%;background:rgba(236,223,198,.2);flex:none;margin-top:8px}
+.tcard.seen .seen-dot{background:var(--good)}
+
+/* clock */
+.clock-wrap{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.clock{width:84px;height:84px;flex:none}
+.clock .face{fill:#efe2c8}
+.clock .mark{stroke:#5b4636;stroke-width:2}
+.clock .mark.lit{stroke:var(--blood);stroke-width:4}
+.clock .hand{stroke:var(--ink);stroke-width:3;stroke-linecap:round;transition:transform .8s cubic-bezier(.5,1.6,.5,1);transform-origin:60px 60px}
+.clock-text{font-family:var(--font-type);font-size:.85rem;color:var(--ash)}
+.clock-text strong{display:block;font-family:var(--font-display);font-weight:400;font-size:1.3rem;color:var(--parchment)}
+
+/* dial */
+.dial-list{display:grid;gap:10px}
+.dial-item{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;text-align:left;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:var(--r);padding:12px;color:var(--parchment);font-family:var(--font-title);font-size:1.05rem}
+.dial-item .slot{width:40px;height:40px;border-radius:50%;border:1px dashed var(--ash);display:grid;place-items:center;font-family:var(--font-display);font-size:1.2rem}
+.dial-item.set .slot{border-style:solid;background:var(--blood);border-color:var(--blood-hi);color:#fff}
+.dial-item.ok{border-color:var(--good)}
+.dial-item.no{border-color:var(--bad)}
+.dial-scale{display:flex;justify-content:space-between;font-family:var(--font-type);font-size:.78rem;color:var(--ash);margin:4px 0 10px}
+.dial-scale span:last-child{color:var(--blood-hi)}
+
+/* planks */
+.sym-tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,140px),1fr));gap:8px;margin-bottom:16px}
+.sym-slot{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:.88rem}
+.sym-slot svg{width:22px;height:22px;color:var(--lantern);flex:none}
+.sym-slot b{margin-left:auto;font-family:var(--font-type);font-weight:400;font-variant-numeric:tabular-nums;color:var(--ash)}
+.sym-slot.full{border-color:var(--good)}
+.sym-slot.full b{color:var(--good)}
+.floor{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:6px;padding:10px;background:#0a0605;border-radius:var(--r);animation:floorbeat var(--beat) infinite}
+@keyframes floorbeat{0%,100%{box-shadow:inset 0 0 0 rgba(210,58,46,0)}12%{box-shadow:inset 0 0 calc(10px + var(--dread)*40px) rgba(210,58,46,.35)}}
+.plank{
+  position:relative;height:74px;border:0;border-radius:2px;color:var(--parchment);
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.0) 0 18px, rgba(0,0,0,.12) 18px 19px),
+    linear-gradient(180deg,#5a3d29,#3f2a1b 60%,#33221a);
+  box-shadow:inset 0 2px 0 rgba(255,220,180,.12), inset 0 -3px 0 rgba(0,0,0,.4);
+  font-family:var(--font-type);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;
+  transition:transform .3s;
+}
+.plank:hover:not(:disabled){transform:translateY(-3px) rotate(-.6deg)}
+.plank .nail{position:absolute;top:50%;width:7px;height:7px;margin-top:-3px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#bbb,#444)}
+.plank .nail.l{left:10px}.plank .nail.r{right:10px}
+.plank.active{outline:2px solid var(--lantern);transform:translateY(-6px) rotate(-1.4deg)}
+.plank.solved{background:linear-gradient(180deg,#130c09,#070403);box-shadow:inset 0 0 18px #000;cursor:default}
+.plank.solved .plank-label{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--good)}
+.plank.solved svg{width:20px;height:20px}
+.plank.solved .nail{display:none}
+.clue-panel{margin-top:16px}
+.sym-choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:8px}
+.sym-choice{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:var(--r);padding:10px;color:var(--parchment);text-align:left}
+.sym-choice svg{width:22px;height:22px;color:var(--lantern);flex:none}
+.sym-choice:hover:not(:disabled){border-color:var(--lantern)}
+.sym-choice.wrong{border-color:var(--bad);opacity:.5}
+
+/* finale & case file */
+.choice-list{display:grid;gap:10px}
+.choice{display:flex;gap:12px;align-items:flex-start;text-align:left;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;color:var(--parchment)}
+.choice[aria-pressed="true"]{border-color:var(--lantern);background:rgba(227,170,76,.1)}
+.choice .box{flex:none;width:22px;height:22px;border:1px solid var(--ash);border-radius:4px;display:grid;place-items:center;margin-top:3px}
+.choice[aria-pressed="true"] .box{background:var(--lantern);border-color:var(--lantern);color:var(--ink)}
+.choice .q{font-family:var(--font-title);font-style:italic}
+.choice .tag{display:block;font-family:var(--font-type);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ash);margin-top:4px;font-style:normal}
+textarea.claim{width:100%;min-height:180px;background:#efe2c8;color:var(--ink);border:0;border-radius:var(--r);padding:16px;font-family:var(--font-type);font-size:1rem;line-height:1.6;resize:vertical}
+.casefile{background:#e9dcc0;color:var(--ink);border-radius:3px;padding:clamp(20px,5vw,44px);position:relative;font-family:var(--font-type);box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden}
+.casefile h2{font-family:var(--font-display);font-size:clamp(1.8rem,5vw,2.6rem);color:#5a1410}
+.casefile .cf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;margin:18px 0;padding:14px 0;border-block:1px dashed #8a7356}
+.casefile .cf-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#7a654a}
+.casefile .cf-ev{font-family:var(--font-title);font-style:italic;font-size:1.05rem;border-left:3px solid #8a1c16;padding-left:12px;margin:8px 0}
+.casefile .cf-claim{white-space:pre-wrap;line-height:1.7;font-size:1rem}
+.stamp{position:absolute;right:clamp(10px,4vw,40px);top:clamp(14px,4vw,34px);border:4px double #a3231d;color:#a3231d;padding:6px 14px;font-family:var(--font-type);font-size:clamp(1rem,3vw,1.5rem);letter-spacing:.15em;transform:rotate(-12deg);opacity:.85}
+
+/* ---------- modals, toasts, confession ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);z-index:100;display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{width:min(760px,100%);max-height:88vh;max-height:88dvh;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;overflow:auto;background:var(--chamber);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,4vw,30px);box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.modal-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.modal-head h2{flex:1;font-size:1.9rem}
+.x{background:none;border:1px solid var(--line);color:var(--parchment);width:36px;height:36px;border-radius:50%;font-size:1.2rem;line-height:1}
+.modal.paper{background:#ece0c7;color:var(--ink);border-color:#b9a27e}
+.modal.paper .x{color:var(--ink);border-color:#9a8566}
+.modal.paper .muted{color:#6a5a48}
+.modal.paper .kicker{color:#8a1c16}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:120;display:grid;gap:8px;width:min(420px,calc(100% - 32px))}
+.toast{background:var(--chamber);border:1px solid var(--lantern);border-radius:var(--r);padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.6);display:flex;gap:10px;align-items:center;animation:toastIn .35s ease-out}
+.toast svg{width:22px;height:22px;color:var(--lantern);flex:none}
+@keyframes toastIn{from{transform:translateY(20px);opacity:0}}
+.confession{position:fixed;inset:0;z-index:150;display:grid;place-items:center;background:radial-gradient(ellipse at center, rgba(120,10,8,.92), rgba(5,0,0,.97));padding:24px;text-align:center}
+.confession .inner{max-width:640px;display:grid;gap:18px;justify-items:center}
+.confession blockquote{margin:0;font-family:var(--font-title);font-style:italic;font-size:clamp(1.3rem,4vw,2rem);line-height:1.35;color:#fff2e6;animation:tremble .12s infinite}
+@keyframes tremble{25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}}
+.confession .big-heart{width:110px;height:110px;color:#ff3b30;animation:beat .33s infinite}
+
+/* shop & awards */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:12px}
+.item{display:grid;gap:8px;align-content:start;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.item h3{font-size:1.2rem}
+.item .swatch{height:36px;border-radius:3px;border:1px solid var(--line)}
+.item .price{font-family:var(--font-type);color:var(--lantern);font-size:.9rem}
+.item .btn{padding:8px 12px;font-size:.9rem}
+.award{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:rgba(0,0,0,.25)}
+.award svg{width:30px;height:30px;flex:none;color:var(--ash)}
+.award.got{border-color:var(--lantern)}
+.award.got svg{color:var(--lantern)}
+.award h3{font-size:1.15rem}
+.list-gap{display:grid;gap:10px}
+
+/* teacher report */
+.tr-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin:14px 0}
+.tr-stat{border:1px solid #b9a27e;border-radius:4px;padding:10px 12px;background:rgba(255,255,255,.3)}
+.tr-stat .n{font-family:var(--font-display);font-size:1.7rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.tr-stat .l{font-family:var(--font-type);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#6a5a48}
+.tr-table-wrap{overflow-x:auto}
+.tr-table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px}
+.tr-table th,.tr-table td{text-align:left;padding:8px 8px;border-bottom:1px solid #c7b38f;vertical-align:top}
+.tr-table th{font-family:var(--font-type);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#6a5a48;font-weight:400}
+.tr-table td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;font-family:var(--font-type);font-size:.75rem;border:1px solid currentColor;margin:2px 4px 2px 0}
+.chip.ok{color:#2f6b28}.chip.mid{color:#8a5a00}.chip.low{color:#a3231d}.chip.none{color:#7a6a58}
+.tr-sec{margin-top:18px}
+.tr-sec h3{font-size:1.3rem;margin-bottom:8px}
+.tr-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.tr-actions .btn{background:#2a1d17;color:#f3e7d0;border-color:#2a1d17}
+.tr-actions .btn.danger{background:#a3231d;border-color:#a3231d}
+.tr-copy{width:100%;min-height:120px;margin-top:10px;font-family:var(--font-type);font-size:.85rem}
+
+/* companions */
+.companion{position:fixed;z-index:45;pointer-events:none;left:calc(10px + env(safe-area-inset-left,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));width:76px;height:76px}
+.companion svg{width:100%;height:100%}
+.companion.raven svg{animation:bob 4s ease-in-out infinite}
+.companion.cat .tail{animation:swish 3s ease-in-out infinite;transform-origin:62px 62px}
+.companion.beetle{width:44px;height:44px;animation:crawl 26s linear infinite}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-3deg)}}
+@keyframes swish{50%{transform:rotate(18deg)}}
+@keyframes crawl{0%{transform:translateX(0)}50%{transform:translateX(calc(100vw - 90px))}50.01%{transform:translateX(calc(100vw - 90px)) scaleX(-1)}100%{transform:translateX(0) scaleX(-1)}}
+
+.fade-in{animation:fadeIn .45s ease-out}
+@keyframes fadeIn{from{opacity:.001;transform:translateY(8px)}}
+
+/* ---------- polish: atmosphere & motion ---------- */
+#dust{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:45;opacity:0;background:radial-gradient(ellipse at center, transparent 35%, rgba(210,40,30,.5))}
+#flash.on{animation:flashOut .55s ease-out}
+@keyframes flashOut{from{opacity:1}to{opacity:0}}
+
+/* title: the eye wakes, then the title bleeds in like ink */
+.title-screen > *{animation:rise .9s cubic-bezier(.2,.7,.2,1) backwards}
+.title-screen > .evil-eye{animation:eyeIn 1.2s ease-out backwards}
+.title-screen > .game-title{animation:inkIn 1.5s ease-out .9s backwards}
+.title-screen > :nth-child(3){animation-delay:1.6s}
+.title-screen > :nth-child(4){animation-delay:1.9s}
+.title-screen > :nth-child(5){animation-delay:2.2s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@keyframes eyeIn{from{opacity:0;transform:scale(.9)}}
+@keyframes inkIn{from{opacity:0;filter:blur(10px);letter-spacing:.12em}}
+@keyframes inkSoft{from{opacity:0;filter:blur(4px)}}
+.title-eye .lid-top{animation:wakeTop 1.8s cubic-bezier(.6,0,.3,1) .3s backwards, lidTop 7s 3s infinite}
+.title-eye .lid-bot{animation:wakeBot 1.8s cubic-bezier(.6,0,.3,1) .3s backwards, lidBot 7s 3s infinite}
+@keyframes wakeTop{0%,25%{transform:translateY(0)}45%{transform:translateY(-34px)}58%{transform:translateY(-12px)}100%{transform:translateY(-84px)}}
+@keyframes wakeBot{0%,25%{transform:translateY(0)}45%{transform:translateY(34px)}58%{transform:translateY(12px)}100%{transform:translateY(84px)}}
+
+/* heartbeat trace beside the heart */
+.ecg{width:64px;height:24px;display:block}
+@media (max-width:860px){ .ecg{display:none} }
+
+/* hub: the eye watches; doors arrive, then swing open */
+.hub-head{grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:28px}
+.hub-text{display:grid;gap:10px;min-width:0}
+.hub-eye .evil-eye{width:150px;filter:drop-shadow(0 0 30px rgba(163,196,210,.15))}
+@media (max-width:700px){ .hub-head{grid-template-columns:1fr} .hub-eye{display:none} }
+.doors{perspective:1400px}
+.door{transform-origin:left center;animation:rise .6s cubic-bezier(.2,.7,.2,1) backwards}
+.door:nth-child(2){animation-delay:.08s}.door:nth-child(3){animation-delay:.16s}.door:nth-child(4){animation-delay:.24s}
+.door.opening{animation:doorOpen .42s cubic-bezier(.5,0,.75,.4) forwards;pointer-events:none}
+@keyframes doorOpen{to{transform:rotateY(-72deg);opacity:.15;box-shadow:30px 0 60px rgba(0,0,0,.8)}}
+.door .door-icon svg{transform-box:fill-box}
+.door[data-act="vocab"] .door-icon svg{animation:write 2.8s ease-in-out infinite;transform-origin:15% 90%}
+@keyframes write{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg) translateX(2px)}50%{transform:rotate(4deg)}75%{transform:rotate(-5deg) translateX(-1px)}}
+.door[data-act="suspense"] .door-icon svg{animation:swing 2.2s ease-in-out infinite;transform-origin:50% 0}
+@keyframes swing{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.door[data-act="symbols"] .door-icon svg{animation:beat var(--beat) infinite}
+.door[data-act="finale"]:not(.locked) .door-icon svg{animation:sealGlow 2.4s ease-in-out infinite}
+@keyframes sealGlow{50%{filter:drop-shadow(0 0 8px var(--lantern))}}
+
+/* act header watermark */
+.act-head{position:relative}
+.act-mark{position:absolute;right:-6px;top:-18px;width:clamp(90px,20vw,170px);color:var(--lantern);opacity:.09;pointer-events:none}
+.act-mark svg{width:100%;height:auto;display:block}
+
+/* questions: passages bleed in, answers rise one after another */
+.passage{animation:inkSoft .7s ease-out backwards}
+.opts .opt:not(.wrong):not(.correct){animation:rise .4s ease-out backwards}
+.opts .opt:nth-child(2){animation-delay:.06s}.opts .opt:nth-child(3){animation-delay:.12s}.opts .opt:nth-child(4){animation-delay:.18s}
+.opts .opt.correct{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{40%{transform:scale(1.03)}}
+.fb{animation:rise .35s ease-out backwards}
+.fb.good{box-shadow:0 0 0 1px rgba(147,193,120,.15), 0 0 28px rgba(147,193,120,.12)}
+
+/* lantern light is warm, not just a hole in the dark */
+.lantern-passage::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 120px at var(--lx,50%) var(--ly,50%), rgba(227,170,76,.2), transparent 70%);transition:opacity .6s}
+.lit.lantern-passage::before{opacity:0}
+
+/* coins fly to the purse */
+.fly-coin{position:fixed;left:0;top:0;z-index:130;width:22px;height:22px;color:var(--lantern);pointer-events:none;filter:drop-shadow(0 0 6px rgba(227,170,76,.8))}
+.fly-coin svg{width:100%;height:100%;display:block}
+
+/* primary buttons catch the candlelight */
+.btn-primary{background:linear-gradient(180deg,var(--blood-hi),var(--blood));box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 6px 18px rgba(0,0,0,.35);position:relative;overflow:hidden}
+.btn-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,240,220,.28) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s;pointer-events:none}
+@media (hover:hover){ .btn-primary:hover:not(:disabled)::after{transform:translateX(120%)} }
+
+/* score screens */
+.big-score{font-family:var(--font-display);font-size:3rem;line-height:1;font-variant-numeric:tabular-nums}
+.star-pop span{display:inline-block;animation:starPop .55s cubic-bezier(.3,1.7,.5,1) backwards}
+@keyframes starPop{from{opacity:0;transform:scale(0) rotate(-40deg)}}
+
+/* break screen candle */
+.candle{width:46px;height:80px;display:block}
+.candle .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flame 1.3s ease-in-out infinite alternate}
+.candle .flame.inner{animation-duration:.9s}
+.candle .glow{animation:flicker 3s infinite steps(1)}
+@keyframes flame{0%{transform:scale(1,1) rotate(-2deg)}50%{transform:scale(.9,1.1) rotate(2deg)}100%{transform:scale(1.05,.94) rotate(-1deg)}}
+
+/* planks lift when chosen; solved gaps glow with the heartbeat */
+.plank.active{animation:liftUp .4s cubic-bezier(.3,1.5,.5,1)}
+@keyframes liftUp{from{transform:none}}
+.plank.solved{animation:gapBeat var(--beat) infinite}
+@keyframes gapBeat{0%,100%{box-shadow:inset 0 0 18px #000}12%{box-shadow:inset 0 0 18px #000, inset 0 0 16px rgba(210,58,46,.4)}}
+.plank.solved.just .plank-label{animation:reveal .55s cubic-bezier(.3,1.6,.5,1)}
+@keyframes reveal{from{opacity:0;transform:scale(.4)}}
+
+/* toasts on parchment */
+.toast{background:var(--parchment);color:var(--ink);border-color:#b9a27e}
+.toast svg{color:#8a1c16}
+.toast .muted{color:#6a5a48}
+
+/* confession: the pulse fills the room */
+.confession{animation:fadeIn .25s ease-out}
+.confession .inner{position:relative}
+.confession .rings{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;overflow:hidden}
+.confession .rings i{position:absolute;width:120px;height:120px;border:2px solid rgba(255,90,70,.55);border-radius:50%;animation:ring 1s ease-out infinite}
+.confession .rings i:nth-child(2){animation-delay:.33s}.confession .rings i:nth-child(3){animation-delay:.66s}
+@keyframes ring{from{transform:scale(.6);opacity:1}to{transform:scale(6);opacity:0}}
+
+/* ---------- touch screens, small screens ---------- */
+@media (hover:none){
+  /* a tapped card shouldn't stay lifted after the finger leaves on phones and tablets */
+  .btn:hover:not(:disabled),.door:hover:not(.locked),.plank:hover:not(:disabled){transform:none}
+  .door:hover:not(.locked){box-shadow:none}
+  .opt:hover:not(:disabled){border-color:var(--line);background:rgba(0,0,0,.25)}
+  .opt:active:not(:disabled),.door:active:not(.locked),.choice:active,.mitem:active{border-color:var(--lantern)}
+  .btn:active:not(:disabled){transform:scale(.97)}
+}
+@media (max-width:520px){
+  body{font-size:17px}
+  .room{padding:18px 14px}
+  .stamp{position:static;display:inline-block;margin-bottom:12px;transform:rotate(-4deg)}
+  .mitem.word{font-size:1rem}
+  .mitem{padding:9px 8px;overflow-wrap:anywhere}
+  .match-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:6px}
+  .stage-item{grid-template-columns:auto 1fr;gap:12px}
+  .stage-item .meta{grid-column:2}
+  .passage{padding:14px 14px}
+  .opt{padding:12px 10px}
+}
+/* short landscape phones: let the toolbar scroll away so the question has room */
+@media (max-height:500px) and (orientation:landscape){
+  .topbar{position:static}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  body > *:not(#print-root){display:none!important}
+  #print-root{display:block!important}
+  .bg,.topbar{display:none!important}
+}
+#print-root{display:none}
+</style>
+</head>
+<body data-skin="midnight">
+<div class="bg bg-floor" aria-hidden="true"></div>
+<div class="bg bg-candle" aria-hidden="true"></div>
+<div class="bg bg-dread" aria-hidden="true"></div>
+<div class="bg bg-vignette" aria-hidden="true"></div>
+<div class="lantern-cursor" id="lanternCursor" hidden></div>
+<div id="flash" aria-hidden="true"></div>
+
+<header class="topbar" id="topbar">
+  <div class="bar-left">
+    <button class="tile home-tile" id="homeBtn" aria-label="Home" data-tip="Home: go back to the old man’s house and choose a room" data-tip-edge="left"></button>
+    <span class="bar-title" aria-hidden="true">The Tell-Tale <em>Heart</em></span>
+  </div>
+  <div class="bar-status">
+    <div class="heart-hud" id="heartHud" tabindex="0" role="status" aria-label="Narrator's pulse" data-tip="The narrator’s pulse. Wrong answers make it race; correct answers calm it down.">
+      <span id="heartIco"></span><span><span id="bpm">72</span> <span class="bpm-label">beats/min</span></span>
+    </div>
+    <div class="gold-hud" id="goldHud" tabindex="0" aria-label="Gold" data-tip="Your gold. Earn it with correct answers and spend it in the Shop."><span id="goldIco"></span><span id="gold">0</span></div>
+  </div>
+  <nav class="bar-tools" aria-label="Game tools">
+    <button class="tile" id="soundBtn"></button>
+    <button class="tile" id="notebookBtn" aria-label="Notebook" data-tip="Notebook: suspense tools, how to read a symbol, and the word list"></button>
+    <button class="tile" id="evidenceBtn" aria-label="Evidence" data-tip="Evidence Locker: the passages you have collected for your case"></button>
+    <button class="tile" id="shopBtn" aria-label="Shop" data-tip="Shop: spend your gold on hints, colors and companions"></button>
+    <button class="tile" id="awardsBtn" aria-label="Awards" data-tip="Awards: the achievements you have earned" data-tip-edge="right"></button>
+    <button class="tile teacher-tile" id="teacherBtn" aria-label="Teacher View" data-tip="Teacher View: this student’s progress, scores, and written claim" data-tip-edge="right"></button>
+  </nav>
+</header>
+
+<main id="main"><noscript><p style="padding:24px;font-size:1.1rem">This game needs JavaScript. Please turn it on in your browser settings, or try another browser.</p></noscript></main>
+<div class="companion" id="companion" hidden aria-hidden="true"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<div id="print-root"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+const VOCAB = [
+  {w:'acute', form:'acute', pos:'adjective', def:'sharp; highly sensitive',
+   quote:'Above all was the sense of hearing <b>acute</b>.',
+   blank:'The disease had sharpened my senses—not destroyed—not dulled them. Above all was the sense of hearing ___. I heard all things in the heaven and in the earth.',
+   clue:'He brags that he “heard all things,” so his hearing must be extremely sharp.',
+   ex:'An owl’s acute hearing lets it find a mouse in the dark.'},
+  {w:'hearken', form:'Hearken', pos:'verb', def:'to listen closely',
+   quote:'<b>Hearken!</b> and observe how healthily—how calmly I can tell you the whole story.',
+   blank:'___! and observe how healthily—how calmly I can tell you the whole story.',
+   clue:'He is about to tell his story and demands the reader’s full attention.',
+   ex:'Hearken to the warning bell before you cross the tracks.'},
+  {w:'conceive', form:'conceived', pos:'verb', def:'to form an idea in the mind',
+   quote:'It is impossible to say how first the idea entered my brain; but once <b>conceived</b>, it haunted me day and night.',
+   blank:'It is impossible to say how first the idea entered my brain; but once ___, it haunted me day and night.',
+   clue:'The sentence is about how an idea first “entered my brain.”',
+   ex:'She conceived the plan for her science project in one afternoon.'},
+  {w:'vex', form:'vexed', pos:'verb', def:'to annoy, trouble, or disturb',
+   quote:'…for it was not the old man who <b>vexed</b> me, but his Evil Eye.',
+   blank:'…but I found the eye always closed; and so it was impossible to do the work; for it was not the old man who ___ me, but his Evil Eye.',
+   clue:'The Eye bothers him so much that he wants to destroy it.',
+   ex:'The dripping faucet vexed him all night.'},
+  {w:'dissimulation', form:'dissimulation', pos:'noun', def:'hiding your true feelings or intentions',
+   quote:'You should have seen how wisely I proceeded—with what caution—with what foresight—with what <b>dissimulation</b> I went to work!',
+   blank:'You should have seen how wisely I proceeded—with what caution—with what foresight—with what ___ I went to work! I was never kinder to the old man than during the whole week before I killed him.',
+   clue:'He acted kind while secretly planning murder. He hid his real intentions.',
+   ex:'The spy’s dissimulation fooled everyone at the party.'},
+  {w:'profound', form:'profound', pos:'adjective', def:'very deep; showing great insight',
+   quote:'…he would have been a very <b>profound</b> old man, indeed, to suspect that every night, just at twelve, I looked in upon him while he slept.',
+   blank:'So you see he would have been a very ___ old man, indeed, to suspect that every night, just at twelve, I looked in upon him while he slept.',
+   clue:'Only someone with remarkable insight could have guessed the narrator’s secret.',
+   ex:'The poem had a profound effect on the whole class.'},
+  {w:'sagacity', form:'sagacity', pos:'noun', def:'sharp judgment; wisdom',
+   quote:'Never before that night had I felt the extent of my own powers—of my <b>sagacity</b>.',
+   blank:'Never before that night had I felt the extent of my own powers—of my ___. I could scarcely contain my feelings of triumph.',
+   clue:'He is bragging about how clever and wise he believes he is.',
+   ex:'The detective’s sagacity helped her solve the case quickly.'},
+  {w:'stealthily', form:'stealthily', pos:'adverb', def:'in a slow, quiet, secret way',
+   quote:'So I opened it—you cannot imagine how <b>stealthily</b>, stealthily—until, at length a single dim ray… fell full upon the vulture eye.',
+   blank:'So I opened it—you cannot imagine how ___, stealthily—until, at length a single dim ray, like the thread of the spider, shot from out the crevice.',
+   clue:'The same word is repeated right after the blank. He moves as secretly as he can.',
+   ex:'The cat crept stealthily toward the bird.'},
+  {w:'crevice', form:'crevice', pos:'noun', def:'a narrow crack or opening',
+   quote:'I resolved to open a little—a very, very little <b>crevice</b> in the lantern.',
+   blank:'When I had waited a long time, very patiently, without hearing him lie down, I resolved to open a little—a very, very little ___ in the lantern.',
+   clue:'“A very, very little” opening lets out only a thin ray of light.',
+   ex:'A spider hid in a crevice in the old stone wall.'},
+  {w:'suavity', form:'suavity', pos:'noun', def:'smooth, polite, confident charm',
+   quote:'There entered three men, who introduced themselves, with perfect <b>suavity</b>, as officers of the police.',
+   blank:'There entered three men, who introduced themselves, with perfect ___, as officers of the police.',
+   clue:'The officers introduce themselves in a smooth, polite way.',
+   ex:'The host greeted every guest with easy suavity.'},
+  {w:'audacity', form:'audacity', pos:'noun', def:'shocking boldness',
+   quote:'…in the wild <b>audacity</b> of my perfect triumph, placed my own seat upon the very spot beneath which reposed the corpse of the victim.',
+   blank:'…while I myself, in the wild ___ of my perfect triumph, placed my own seat upon the very spot beneath which reposed the corpse of the victim.',
+   clue:'Sitting right on top of the hidden body is an outrageously bold act.',
+   ex:'He had the audacity to cut in line in front of the principal.'},
+  {w:'vehemently', form:'vehemently', pos:'adverb', def:'with strong, forceful emotion',
+   quote:'I talked more quickly—more <b>vehemently</b>; but the noise steadily increased.',
+   blank:'I gasped for breath—and yet the officers heard it not. I talked more quickly—more ___; but the noise steadily increased.',
+   clue:'He is losing control, talking faster and with more and more force.',
+   ex:'She argued vehemently that recess should be longer.'},
+  {w:'gesticulation', form:'gesticulations', pos:'noun', def:'big, dramatic hand and arm movements',
+   quote:'I arose and argued about trifles, in a high key and with violent <b>gesticulations</b>.',
+   blank:'I arose and argued about trifles, in a high key and with violent ___; but the noise steadily increased.',
+   clue:'“Violent” movements that go along with his loud arguing.',
+   ex:'The coach’s wild gesticulations told the team to run.'},
+  {w:'derision', form:'derision', pos:'noun', def:'mockery; scornful laughter',
+   quote:'Anything was more tolerable than this <b>derision</b>!',
+   blank:'They were making a mockery of my horror!… But anything was better than this agony! Anything was more tolerable than this ___!',
+   clue:'Just before, he says they were “making a mockery” of him.',
+   ex:'The bully’s derision made the new student want to hide.'},
+  {w:'hypocritical', form:'hypocritical', pos:'adjective', def:'fake; pretending to feel what you don’t',
+   quote:'I could bear those <b>hypocritical</b> smiles no longer!',
+   blank:'I could bear those ___ smiles no longer! I felt that I must scream or die!',
+   clue:'He believes the officers’ smiles are fake and that they secretly know.',
+   ex:'It is hypocritical to tell others to recycle and then litter.'},
+  {w:'dissemble', form:'dissemble', pos:'verb', def:'to hide the truth by pretending',
+   quote:'“Villains!” I shrieked, “<b>dissemble</b> no more! I admit the deed!”',
+   blank:'“Villains!” I shrieked, “___ no more! I admit the deed!—tear up the planks! here, here!—It is the beating of his hideous heart!”',
+   clue:'He thinks the officers are only pretending not to hear the sound.',
+   ex:'He tried to dissemble his fear with a loud laugh.'}
+];
+
+const DETECT = [
+  {id:'det-profound', label:'profound (in context)',
+   passage:'So you see he would have been a very <b>profound</b> old man, indeed, to suspect that every night, just at twelve, I looked in upon him while he slept.',
+   prompt:'Why does the narrator call the old man “profound” here?',
+   options:[
+    {t:'To brag: only an incredibly insightful person could have seen through his “perfect” plan.', why:'Right. He is really praising his own cleverness. That arrogance is a warning sign about this narrator.'},
+    {t:'Because the old man was a famous scholar.', why:'The story never says this. “Profound” here is about seeing through the narrator’s secret.'},
+    {t:'Because the old man really did suspect him.', why:'Close, but he says the old man would have to be very profound <i>to</i> suspect, meaning he believes the old man didn’t.'},
+    {t:'Because he respects the old man’s deep religious faith.', why:'Nothing in this sentence is about religion. Look at what the old man would have to “suspect.”'}], answer:0},
+  {id:'det-acute', label:'acute (in context)',
+   passage:'The disease had sharpened my senses—not destroyed—not dulled them. Above all was the sense of hearing <b>acute</b>. I heard all things in the heaven and in the earth. I heard many things in hell.',
+   prompt:'He offers his “acute” hearing as proof that he is sane. What does it really suggest?',
+   options:[
+    {t:'He may be hearing things that are not really there.', why:'Yes. Hearing “many things in hell” isn’t a sign of health. This sets up the heartbeat he hears at the end.'},
+    {t:'He works as a doctor and listens to heartbeats.', why:'The story gives him no job. He calls his condition a “disease.”'},
+    {t:'He is a talented musician.', why:'Nothing points to music. Focus on what he claims to hear.'},
+    {t:'He is telling the complete truth about everything.', why:'A person who hears “all things in the heaven and in the earth” is not a reliable witness.'}], answer:0},
+  {id:'det-vex', label:'vexed (in context)',
+   passage:'…for it was not the old man who <b>vexed</b> me, but his Evil Eye.',
+   prompt:'What does this distinction reveal about the narrator?',
+   options:[
+    {t:'He separates the man from his eye, which is irrational. He will kill a man he says he loves because of one feature.', why:'Exactly. Splitting the eye from the person shows how twisted his reasoning is.'},
+    {t:'The old man had been cruel to him for years.', why:'He says, “He had never wronged me. He had never given me insult.”'},
+    {t:'He wants the old man’s money.', why:'He says, “For his gold I had no desire.”'},
+    {t:'He wants to help cure the old man’s eye disease.', why:'His plan is to “rid myself of the eye forever,” not to cure it.'}], answer:0},
+  {id:'det-suavity', label:'suavity vs. gesticulations',
+   passage:'There entered three men, who introduced themselves, with perfect <b>suavity</b>… <br>…I arose and argued about trifles, in a high key and with violent <b>gesticulations</b>.',
+   prompt:'What does the contrast between the officers’ suavity and the narrator’s gesticulations show?',
+   options:[
+    {t:'The calm officers make his growing panic stand out. His mask of control is slipping.', why:'Yes. Poe sets smooth, polite officers beside a man flailing his arms. The contrast makes the narrator’s breakdown obvious.'},
+    {t:'The officers are angry and he is calming them down.', why:'Reverse that. The officers stay calm; he is the one losing control.'},
+    {t:'They are all dancing together.', why:'“Gesticulations” are dramatic gestures made while arguing, not dance moves.'},
+    {t:'Both sides are equally calm.', why:'“Violent gesticulations” and a “high key” voice are not calm.'}], answer:0},
+  {id:'det-dissemble', label:'dissemble (in context)',
+   passage:'“Villains!” I shrieked, “<b>dissemble</b> no more! I admit the deed!”',
+   prompt:'Why is it ironic that the narrator accuses the officers of dissembling?',
+   options:[
+    {t:'He is the one who has been pretending all along, hiding a murder behind a calm, friendly act.', why:'That’s the irony. He accuses them of the exact thing he has been doing since the first page.'},
+    {t:'The officers really were lying to him.', why:'Nothing shows they hear the sound. Their calm seems genuine.'},
+    {t:'He wants them to take apart the floorboards.', why:'“Dissemble” means to pretend. It is not the same as “disassemble.”'},
+    {t:'He is praising the officers for their honesty.', why:'He calls them “Villains!” He is accusing them, not praising them.'}], answer:0}
+];
+
+const TOOLS = [
+  {name:'Pacing', def:'How fast or slow the story feels. Short, choppy sentences speed it up; long, winding sentences slow it down.', ex:'He shrieked once—once only.'},
+  {name:'Repetition', def:'Repeating words or phrases to build pressure, like a drumbeat that won’t stop.', ex:'louder! louder! louder! louder!'},
+  {name:'Foreshadowing', def:'Hints or clues about what will happen later.', ex:'Death, in approaching him had stalked with his black shadow before him.'},
+  {name:'Dramatic irony', def:'The reader knows something a character does not.', ex:'I was never kinder to the old man than during the whole week before I killed him.'},
+  {name:'Sensory imagery', def:'Details that appeal to the five senses. In this story, sound matters most.', ex:'a low, dull, quick sound, such as a watch makes when enveloped in cotton.'},
+  {name:'Slowing time', def:'Stretching a short moment out so the reader feels every second.', ex:'It took me an hour to place my whole head within the opening.'},
+  {name:'Unreliable narrator', def:'A storyteller the reader can’t fully trust. He insists he is sane while acting mad.', ex:'why will you say that I am mad?'},
+  {name:'Punctuation', def:'Dashes and exclamation points show panic and thoughts breaking apart.', ex:'They heard!—they suspected!—they knew!'}
+];
+
+const CHIMES = [
+  {id:'ch-1', label:'Unreliable narrator',
+   passage:'TRUE!—nervous—very, very dreadfully nervous I had been and am; but why will you say that I am mad?',
+   prompt:'How does this opening line hook the reader?',
+   options:[
+    {t:'The narrator insists he isn’t mad while sounding frantic, so we doubt him right away.', why:'Yes. The dashes, the repeated “very,” and the defensive question make him sound unstable. We start the story already suspicious.'},
+    {t:'It describes a spooky setting.', why:'There is no setting yet, only a voice. The hook comes from how he talks.'},
+    {t:'It tells us exactly what crime happened.', why:'We don’t learn about the crime yet. Making us wait adds to the suspense.'},
+    {t:'It shows the narrator is calm and reasonable.', why:'Look at the dashes and “very, very dreadfully nervous.” He sounds anything but calm.'}], answer:0},
+  {id:'ch-2', label:'Unreliable narrator',
+   passage:'Object there was none. Passion there was none. I loved the old man. He had never wronged me. He had never given me insult. For his gold I had no desire. I think it was his eye! yes, it was this!',
+   prompt:'Why does the narrator’s lack of a real motive make the story more suspenseful?',
+   options:[
+    {t:'With no logical reason, we can’t predict what he’ll do, and that makes him frightening.', why:'Right. A killer with a motive can be understood. A killer with none is terrifying.'},
+    {t:'It proves he is innocent.', why:'He is explaining why he decided to kill. That’s not innocence.'},
+    {t:'It shows the old man is the villain.', why:'He says the old man “had never wronged me.” The old man is not the villain.'},
+    {t:'It slows the story down with boring facts.', why:'These short, flat sentences build tension. Each one rules out a normal reason until only the eye is left.'}], answer:0},
+  {id:'ch-3', label:'Dramatic irony',
+   passage:'I was never kinder to the old man than during the whole week before I killed him.',
+   prompt:'Which technique is Poe using here?',
+   options:[
+    {t:'Dramatic irony: we know about the murder plan, but the old man doesn’t.', why:'Correct. Every kind act is chilling because we know what he really intends.'},
+    {t:'Flashback', why:'It doesn’t jump to an earlier scene. The key is what the old man doesn’t know.'},
+    {t:'Personification', why:'Nothing non-human is given human traits here.'},
+    {t:'Comic relief', why:'The kindness is chilling, not funny, because we know what is coming.'}], answer:0},
+  {id:'ch-4', label:'Slowing time',
+   passage:'Upon the eighth night I was more than usually cautious in opening the door. A watch’s minute hand moves more quickly than did mine.',
+   prompt:'What does comparing his hand to a watch’s minute hand do to the pacing?',
+   options:[
+    {t:'It stretches the moment, so we feel every agonizing second.', why:'Yes. A minute hand barely moves, and his hand moves even slower. Poe slows time to a crawl.'},
+    {t:'It speeds the scene up.', why:'Think about how slowly a minute hand moves. His hand is slower still.'},
+    {t:'It shows he is late for an appointment.', why:'The watch is a comparison (a simile), not a real schedule.'},
+    {t:'It shows the old man is awake.', why:'This sentence is about the narrator’s movement, not the old man.'}], answer:0},
+  {id:'ch-5', label:'Pacing',
+   passage:'I had my head in, and was about to open the lantern, when my thumb slipped upon the tin fastening, and the old man sprang up in bed, crying out—“Who’s there?”',
+   prompt:'What does this small accident add to the story?',
+   options:[
+    {t:'A sudden break in the slow silence. The plan goes wrong and the stakes jump.', why:'Exactly. After pages of slow creeping, one slip changes everything. The victim is awake.'},
+    {t:'A peaceful moment of rest.', why:'Someone shouting “Who’s there?” in the dark is the opposite of peaceful.'},
+    {t:'A moment of comic relief.', why:'It might seem clumsy, but it makes the scene more dangerous, not funny.'},
+    {t:'A long description of the bedroom.', why:'This sentence is all action. Notice how quickly it moves.'}], answer:0},
+  {id:'ch-6', label:'Sensory imagery',
+   passage:'For a whole hour I did not move a muscle, and in the meantime I did not hear him lie down. He was still sitting up in the bed listening;—just as I have done, night after night, hearkening to the death watches in the wall.',
+   prompt:'How does Poe build tension in this moment of stillness?',
+   options:[
+    {t:'Through silence and listening. Both men are frozen in the dark, straining to hear.', why:'Yes. Nothing happens, and that is exactly what makes it unbearable.'},
+    {t:'Through fast action and fighting.', why:'No one moves “a muscle” for a whole hour.'},
+    {t:'Through cheerful conversation.', why:'No one speaks at all.'},
+    {t:'Through a flashback to the narrator’s childhood.', why:'“Night after night” refers to his own sleepless nights, but the focus is the silence right now.'}], answer:0},
+  {id:'ch-7', label:'Foreshadowing',
+   passage:'All in vain; because Death, in approaching him had stalked with his black shadow before him, and enveloped the victim.',
+   prompt:'What two techniques make this sentence so ominous?',
+   options:[
+    {t:'Personification and foreshadowing. Death is a stalker, which hints that the old man will die.', why:'Right. Death is a hunter here, and its shadow already covers the “victim.”'},
+    {t:'Dramatic irony and humor', why:'There is nothing funny here.'},
+    {t:'Onomatopoeia and rhyme', why:'No sound-words or rhymes appear in this sentence.'},
+    {t:'Flashback and dialogue', why:'No one speaks, and we don’t go back in time.'}], answer:0},
+  {id:'ch-8', label:'Sensory imagery',
+   passage:'…until, at length a single dim ray, like the thread of the spider, shot from out the crevice and fell full upon the vulture eye.',
+   prompt:'Why compare the ray of light to “the thread of the spider”?',
+   options:[
+    {t:'It shows how thin the light is, and it suggests a predator trapping its prey.', why:'Yes. The ray is delicate, but spiders spin threads to catch victims.'},
+    {t:'It shows the room is full of real spiders.', why:'It’s a simile, not a literal spider.'},
+    {t:'It shows the light is warm and comforting.', why:'A “dim ray” landing on a “vulture eye” is not comforting.'},
+    {t:'It shows the narrator is afraid of the dark.', why:'He is comfortable in the dark. He chooses it.'}], answer:0},
+  {id:'ch-9', label:'Repetition',
+   passage:'Meantime the hellish tattoo of the heart increased. It grew quicker and quicker, and louder and louder every instant. … It grew louder, I say, louder every moment!—do you mark me well?',
+   prompt:'How does the writing itself build suspense here?',
+   options:[
+    {t:'Repetition (“quicker and quicker, and louder and louder”) copies a pounding heartbeat and rising panic.', why:'Exactly. A “tattoo” is a drumbeat, and the sentences pound like one.'},
+    {t:'Long descriptions of the furniture slow everything down.', why:'There is no furniture here. It’s all sound.'},
+    {t:'The narrator calmly explains how hearts work.', why:'“Hellish” and “do you mark me well?” are not calm.'},
+    {t:'Dialogue between the old man and narrator.', why:'No one is speaking to anyone in the room.'}], answer:0},
+  {id:'ch-10', label:'Dramatic irony',
+   passage:'When I had made an end of these labors, it was four o’clock—still dark as midnight. As the bell sounded the hour, there came a knocking at the street door. I went down to open it with a light heart,—for what had I now to fear?',
+   prompt:'Why is “with a light heart” ironic?',
+   options:[
+    {t:'He feels safe, but the knock means danger. A heart is exactly what will betray him.', why:'Yes. Poe slips the word “heart” in at the moment the narrator feels most secure.'},
+    {t:'He is actually terrified when he opens the door.', why:'At this moment he truly feels confident. The irony is that he shouldn’t.'},
+    {t:'It means he is physically ill.', why:'“Light heart” is an expression for feeling cheerful and carefree.'},
+    {t:'It shows the police are his friends.', why:'They are strangers sent to investigate a shriek.'}], answer:0},
+  {id:'ch-11', label:'Dramatic irony',
+   passage:'…while I myself, in the wild audacity of my perfect triumph, placed my own seat upon the very spot beneath which reposed the corpse of the victim.',
+   prompt:'What makes this moment so tense for the reader?',
+   options:[
+    {t:'Dramatic irony: we know the body is right under him, but the officers don’t.', why:'Correct. We hold our breath because we know what is beneath that chair.'},
+    {t:'The officers have already found the body.', why:'They haven’t. That’s what makes it so tense.'},
+    {t:'The narrator is tired and needs to sit.', why:'He calls it “wild audacity.” It’s a bold show of confidence, not tiredness.'},
+    {t:'Nothing. It is a calm, restful scene.', why:'A man sitting on his victim’s grave in front of police is anything but calm.'}], answer:0},
+  {id:'ch-12', label:'Punctuation',
+   passage:'They heard!—they suspected!—they knew!—they were making a mockery of my horror! … hark! louder! louder! louder! louder!',
+   prompt:'How do the punctuation and sentence length affect the climax?',
+   options:[
+    {t:'Dashes and exclamation points break the sentences into frantic bursts, like a mind snapping.', why:'Yes. The sentences fall apart just like the narrator does.'},
+    {t:'They slow the scene down so it feels peaceful.', why:'Short bursts with exclamation points speed things up.'},
+    {t:'They show the narrator is reasoning calmly.', why:'Calm reasoning uses complete, steady sentences, not these.'},
+    {t:'They have no effect. They’re just decoration.', why:'Punctuation is one of Poe’s strongest suspense tools in this passage.'}], answer:0}
+];
+
+const DIAL = [
+  {id:'dial-1', label:'Ordering tension: the eighth night',
+   items:[
+    'And every morning, when the day broke, I went boldly into the chamber, and spoke courageously to him, calling him by name in a hearty tone.',
+    'I kept quite still and said nothing. For a whole hour I did not move a muscle.',
+    'It grew louder, I say, louder every moment!—do you mark me well?',
+    'With a loud yell, I threw open the lantern and leaped into the room. He shrieked once—once only.'],
+   why:'Morning visits are calm and cheerful. The hour of stillness is quiet but tense. The repeated “louder” builds panic. Then short, violent sentences explode into action.'},
+  {id:'dial-2', label:'Ordering tension: the police visit',
+   items:[
+    'The officers were satisfied. My manner had convinced them. I was singularly at ease.',
+    'My head ached, and I fancied a ringing in my ears: but still they sat and still chatted.',
+    'I arose and argued about trifles, in a high key and with violent gesticulations; but the noise steadily increased.',
+    '“Villains!” I shrieked, “dissemble no more! I admit the deed!—tear up the planks! here, here!”'],
+   why:'He starts “at ease,” then a small ache appears. Next come violent movements, and finally a shrieking confession full of dashes and exclamation points.'}
+];
+
+const REWRITE = [
+  {id:'rw-1', label:'Slowing time & repetition', plain:'I opened the door slowly.',
+   options:[
+    {t:'“I opened the door—slowly—very, very slowly—so slowly that a whole hour passed.”', why:'Yes. Dashes, the repeated “very,” and an exaggerated hour stretch the moment like Poe does.'},
+    {t:'“I opened the door slowly and went inside.”', why:'This rushes past the moment. Suspense comes from making the reader wait.'}], answer:0},
+  {id:'rw-2', label:'Sensory imagery', plain:'I heard a sound.',
+   options:[
+    {t:'“There came a sound—low, dull, quick—like a watch wrapped in cotton.”', why:'Right. Specific sensory details and a simile make the sound feel real and creepy.'},
+    {t:'“There was a sound. It was quiet.”', why:'“Quiet” is vague. We can’t hear anything in our heads.'}], answer:0},
+  {id:'rw-3', label:'Show, don’t tell', plain:'The old man was scared.',
+   options:[
+    {t:'“The old man was very, very scared that night.”', why:'This still only tells us he’s scared. Adding “very” doesn’t let us feel it.'},
+    {t:'“He sat up in bed, listening. Was it the wind? A mouse? He did not lie down again.”', why:'Yes. We see his fear through his actions and his desperate questions.'}], answer:1},
+  {id:'rw-4', label:'Dramatic irony', plain:'The police came and I was calm.',
+   options:[
+    {t:'“Three officers entered. I smiled—for what had I to fear?”', why:'Yes. His confident question makes us nervous, because we know exactly what he has to fear.'},
+    {t:'“The police came. I was calm and they looked around.”', why:'This is flat. Nothing tells us that we know more than the characters do.'}], answer:0},
+  {id:'rw-5', label:'Pacing & punctuation', plain:'I panicked.',
+   options:[
+    {t:'“I panicked a lot and felt really bad about it.”', why:'This tells us about panic without showing it.'},
+    {t:'“I gasped—I raved—I paced! Louder! Louder!”', why:'Yes. Short bursts, dashes, and exclamation points make the sentence itself panic.'}], answer:1}
+];
+
+const SYM_INTRO = [
+  {id:'si-1', label:'What is a symbol', prompt:'In a story about a family falling apart, a character keeps staring at a cracked family photo. The cracked photo most likely symbolizes…',
+   options:[
+    {t:'the broken family', why:'Yes. The literal crack stands for a bigger idea, the family breaking apart.'},
+    {t:'that the frame was cheap', why:'That’s the literal level only. A symbol points beyond itself.'},
+    {t:'that the character likes photography', why:'Staring at it repeatedly suggests it means something more.'},
+    {t:'the weather outside', why:'Nothing connects a photo to the weather here.'}], answer:0},
+  {id:'si-2', label:'What is a symbol', prompt:'What turns an ordinary object in a story into a symbol?',
+   options:[
+    {t:'It shows up at important moments and points to a bigger idea.', why:'Exactly. Repetition plus a connection to a big idea such as guilt, fear, or death equals a symbol.'},
+    {t:'It is described using a color.', why:'Lots of objects have colors. That alone doesn’t make them symbols.'},
+    {t:'It is expensive.', why:'Value doesn’t matter. A cheap object can be a powerful symbol.'},
+    {t:'It is the very first thing mentioned in the story.', why:'Position doesn’t decide it. Meaning does.'}], answer:0}
+];
+
+const SYMBOLS = [
+  {id:'eye', name:'The Vulture Eye', icon:'eye'},
+  {id:'heart', name:'The Heartbeat', icon:'heart'},
+  {id:'floor', name:'The Floorboards', icon:'planks'},
+  {id:'lantern', name:'The Dark Lantern', icon:'lantern'},
+  {id:'dark', name:'Darkness & Midnight', icon:'moon'},
+  {id:'time', name:'The Watch & Death-Watch', icon:'watch'}
+];
+
+const PLANKS = [
+  {id:'pk-1', s:'eye', q:'He had the eye of a vulture—a pale blue eye, with a film over it.', why:'Vultures circle the dying. Calling it a vulture eye ties the eye to death and to being watched.'},
+  {id:'pk-2', s:'eye', q:'Whenever it fell upon me, my blood ran cold.', why:'The eye’s gaze terrifies him. He feels judged whenever it looks at him.'},
+  {id:'pk-3', s:'heart', q:'It was the beating of the old man’s heart. It increased my fury, as the beating of a drum stimulates the soldier into courage.', why:'The heartbeat drives him like a war drum. Later the same sound drives his guilt.'},
+  {id:'pk-4', s:'heart', q:'I placed my hand upon the heart and held it there many minutes. There was no pulsation.', why:'He proves the heart is silent, so the beating he hears later can only come from inside him.'},
+  {id:'pk-5', s:'heart', q:'It is the beating of his hideous heart!', why:'The heart “tells the tale.” It is what finally exposes him.'},
+  {id:'pk-6', s:'floor', q:'I then took up three planks from the flooring of the chamber, and deposited all between the scantlings.', why:'The floorboards are where he buries the truth.'},
+  {id:'pk-7', s:'floor', q:'I then replaced the boards so cleverly, so cunningly, that no human eye—not even his—could have detected any thing wrong.', why:'The smooth floor is his calm mask. Everything looks normal on the surface.'},
+  {id:'pk-8', s:'lantern', q:'I put in a dark lantern, all closed, closed, that no light shone out.', why:'A “dark lantern” hides its light. It is a tool of secrecy, like the narrator himself.'},
+  {id:'pk-9', s:'lantern', q:'I undid it just so much that a single thin ray fell upon the vulture eye.', why:'One narrow beam picks out only the eye. That is his obsession made visible.'},
+  {id:'pk-10', s:'dark', q:'His room was as black as pitch with the thick darkness, (for the shutters were close fastened, through fear of robbers).', why:'Darkness hides the crime and mirrors the darkness in the narrator’s mind.'},
+  {id:'pk-11', s:'time', q:'A watch’s minute hand moves more quickly than did mine.', why:'The watch measures the slow, deadly countdown to murder.'},
+  {id:'pk-12', s:'time', q:'He was still sitting up in the bed listening;—just as I have done, night after night, hearkening to the death watches in the wall.', why:'Death-watch beetles tick in walls. Folklore said their ticking meant someone would soon die.'}
+];
+
+const DEEP = [
+  {id:'dp-e1', label:'Eye: literal meaning', sec:'eye',
+   passage:'He had the eye of a vulture—a pale blue eye, with a film over it.',
+   prompt:'Start with the literal. What is actually wrong with the old man’s eye?',
+   options:[
+    {t:'It is pale and cloudy, probably from an eye disease like a cataract.', why:'Right. Literally, it’s an old man’s clouded eye. Only the narrator turns it into something evil.'},
+    {t:'It glows red in the dark.', why:'Nothing says it glows. It’s “pale blue” with a “film.”'},
+    {t:'It belongs to an actual vulture.', why:'“Eye of a vulture” is a comparison, not a real bird.'},
+    {t:'It is made of glass.', why:'It’s a real eye. It opens and closes.'}], answer:0},
+  {id:'dp-e2', label:'Eye: symbolic meaning', sec:'eye',
+   passage:'Whenever it fell upon me, my blood ran cold; and so by degrees—very gradually—I made up my mind to take the life of the old man, and thus rid myself of the eye forever.',
+   prompt:'Vultures feed on the dying. What does the “vulture eye” most likely symbolize to the narrator?',
+   options:[
+    {t:'Being watched and judged, and death itself.', why:'Yes. The eye makes him feel exposed, and the vulture ties it to death. Readers also connect it to the folk belief in the “evil eye,” a look that brings harm.'},
+    {t:'The old man’s wealth.', why:'He says, “For his gold I had no desire.”'},
+    {t:'Wisdom and good luck.', why:'He feels the opposite. His “blood ran cold.”'},
+    {t:'The police investigation.', why:'The police don’t appear until the end. The eye haunts him long before.'}], answer:0},
+  {id:'dp-e3', label:'Eye: best evidence', sec:'eye',
+   prompt:'Which quote best shows that the narrator’s problem is the EYE, not the man?',
+   options:[
+    {t:'“It was not the old man who vexed me, but his Evil Eye.”', why:'Exactly. He splits the man from the eye. The eye has become the thing he must destroy.'},
+    {t:'“There entered three men… as officers of the police.”', why:'This is about the police, not the eye.'},
+    {t:'“I then took up three planks from the flooring of the chamber.”', why:'That’s about hiding the body.'},
+    {t:'“The old man’s hour had come!”', why:'This is about when the murder happens, not why the eye bothers him.'}], answer:0, evidence:'It was not the old man who vexed me, but his Evil Eye.'},
+  {id:'dp-e4', label:'Eye: deeper reading (eye / I)', sec:'eye',
+   prompt:'Say “eye” out loud. It sounds like “I.” Some readers think that matters. Why?',
+   options:[
+    {t:'By destroying the eye, he may be trying to destroy the part of himself (his “I”) that sees his own guilt.', why:'That’s a sophisticated reading. The eye that watches him may really be his own conscience, and you can’t kill your own conscience.'},
+    {t:'It proves the old man was blind.', why:'The eye opens and looks at him. The old man was not blind.'},
+    {t:'It means the narrator is writing in a diary.', why:'Using “I” doesn’t make it a diary, and that isn’t the point of the pun.'},
+    {t:'It is a printing mistake in the original story.', why:'Poe chose his words carefully. The sound echo is worth noticing.'}], answer:0},
+  {id:'dp-h1', label:'Heartbeat: literal claim', sec:'heart',
+   passage:'It was a low, dull, quick sound—much such a sound as a watch makes when enveloped in cotton.',
+   prompt:'At the end, what does the narrator CLAIM this sound is?',
+   options:[
+    {t:'The old man’s heart, still beating beneath the floor.', why:'Yes, that is his claim: “It is the beating of his hideous heart!”'},
+    {t:'A clock ticking in the hallway.', why:'He compares it to a watch, but he insists it is the heart.'},
+    {t:'The officers tapping their feet.', why:'The officers sit and chat pleasantly. He blames them for pretending, not tapping.'},
+    {t:'Rain on the roof.', why:'Weather is never mentioned.'}], answer:0},
+  {id:'dp-h2', label:'Heartbeat: what it really is', sec:'heart',
+   passage:'I placed my hand upon the heart and held it there many minutes. There was no pulsation. He was stone dead.',
+   prompt:'If the old man’s heart truly stopped, what is the sound the narrator hears most likely to be?',
+   options:[
+    {t:'His own pounding heart and imagination, driven by panic and guilt.', why:'Yes. The officers hear nothing. The sound comes from inside the narrator.'},
+    {t:'The old man’s ghost.', why:'That’s possible in some ghost stories, but no one else hears it. Poe points us toward the narrator’s mind.'},
+    {t:'A real heartbeat that the officers hear too.', why:'“The officers heard it not.”'},
+    {t:'Death-watch beetles making music.', why:'Beetles tick, but the narrator connects this sound to the heart and his guilt.'}], answer:0},
+  {id:'dp-h3', label:'Heartbeat: symbolic meaning', sec:'heart',
+   prompt:'So what does the heartbeat most strongly symbolize?',
+   options:[
+    {t:'Guilt: a conscience that grows louder until it can’t be ignored.', why:'Exactly. The sound swells whenever he tries to act innocent.'},
+    {t:'Love between the narrator and the old man.', why:'He said he loved the old man, but the heartbeat torments him. It isn’t loving.'},
+    {t:'The narrator’s good health.', why:'The sound drives him to scream and confess. That’s not health.'},
+    {t:'Music the narrator enjoys.', why:'He calls it “hellish” and “hideous.”'}], answer:0},
+  {id:'dp-h4', label:'Heartbeat: the title', sec:'heart',
+   prompt:'A “tell-tale” is someone who tattles. Why is the story called “The Tell-Tale Heart”?',
+   options:[
+    {t:'The heart “tattles” on the narrator. His guilt exposes the crime.', why:'Yes. The heart literally tells the tale and gives away his secret.'},
+    {t:'The old man tells the police the truth.', why:'The old man is dead before the police arrive.'},
+    {t:'The narrator tells a love story.', why:'It’s a murder confession, not a love story.'},
+    {t:'A doctor explains how hearts work.', why:'There is no doctor in the story.'}], answer:0},
+  {id:'dp-f1', label:'Floorboards: literal meaning', sec:'floor',
+   passage:'I then took up three planks from the flooring of the chamber, and deposited all between the scantlings.',
+   prompt:'Literal level: what is hidden beneath the floorboards?',
+   options:[
+    {t:'The old man’s body.', why:'Yes. Literally, the floor hides the evidence of murder.'},
+    {t:'The old man’s gold.', why:'He shows the police the old man’s “treasures, secure, undisturbed.”'},
+    {t:'The lantern.', why:'The lantern is used to see the eye. It isn’t hidden under the floor.'},
+    {t:'Nothing. He only imagined hiding something.', why:'He describes the hiding in careful detail.'}], answer:0},
+  {id:'dp-f2', label:'Floorboards: symbolic meaning', sec:'floor',
+   prompt:'What do the floorboards most likely symbolize?',
+   options:[
+    {t:'His attempt to bury his guilt beneath a calm, normal-looking surface.', why:'Yes. On top everything looks fine, but the truth lies just underneath.'},
+    {t:'His skill as a carpenter.', why:'He is proud of the work, but the boards matter because of what they hide.'},
+    {t:'The old man’s home and family.', why:'No family is ever mentioned.'},
+    {t:'Safety and comfort.', why:'The floor becomes the place where his panic explodes.'}], answer:0},
+  {id:'dp-f3', label:'Floorboards: best evidence', sec:'floor',
+   prompt:'Which quote shows the narrator is proud of how well he hid the truth?',
+   options:[
+    {t:'“I then replaced the boards so cleverly, so cunningly, that no human eye—not even his—could have detected any thing wrong.”', why:'Yes: “so cleverly, so cunningly.” Notice the eye shows up again too: “not even his.”'},
+    {t:'“Who’s there?”', why:'That’s the old man waking up.'},
+    {t:'“It grew louder—louder—louder!”', why:'That’s about the heartbeat, not his pride in hiding the body.'},
+    {t:'“I loved the old man.”', why:'That’s about his feelings toward the victim.'}], answer:0, evidence:'I then replaced the boards so cleverly, so cunningly, that no human eye—not even his—could have detected any thing wrong.'},
+  {id:'dp-f4', label:'Floorboards: the ending', sec:'floor',
+   passage:'“…I admit the deed!—tear up the planks! here, here!—It is the beating of his hideous heart!”',
+   prompt:'He begs the officers to “tear up the planks.” What does this ending suggest?',
+   options:[
+    {t:'Guilt can’t stay buried. The hidden truth forces its way back up.', why:'That’s the theme. He can hide a body, but not his conscience.'},
+    {t:'He wants to remodel the floor.', why:'He is confessing to murder, not planning repairs.'},
+    {t:'He has been innocent all along.', why:'“I admit the deed!” is a confession.'},
+    {t:'The officers found the body first.', why:'They were “chatting pleasantly.” He confesses before anyone finds anything.'}], answer:0}
+];
+
+const BONUS = [
+  {id:'bn-lantern', label:'Lantern symbol',
+   passage:'I undid it just so much that a single thin ray fell upon the vulture eye.',
+   prompt:'The dark lantern lets out only one thin ray. What might that narrow beam symbolize?',
+   options:[
+    {t:'His narrow, obsessive focus. He sees only the eye, never the whole man.', why:'Yes. He even says he could see “nothing else of the old man’s face or person.”'},
+    {t:'Hope and goodness entering the room.', why:'This light serves a murderer’s plan.'},
+    {t:'The sunrise.', why:'It’s midnight, and the light comes from a lantern.'},
+    {t:'His fear of fire.', why:'Nothing suggests he fears fire.'}], answer:0},
+  {id:'bn-dark', label:'Darkness symbol',
+   passage:'His room was as black as pitch with the thick darkness…',
+   prompt:'The crimes happen at midnight in thick darkness. What does the darkness represent?',
+   options:[
+    {t:'Secrecy, evil, and the darkness inside the narrator’s mind.', why:'Yes. The outer darkness matches the inner one.'},
+    {t:'That the old man saves money on candles.', why:'That’s literal only. Poe uses darkness to mean much more.'},
+    {t:'Peaceful rest.', why:'This darkness hides a killer.'},
+    {t:'That the old man is blind.', why:'The old man can see. The darkness is in the room.'}], answer:0},
+  {id:'bn-watch', label:'Death-watch symbol',
+   passage:'…hearkening to the death watches in the wall.',
+   prompt:'Death-watch beetles tick inside old walls, and folklore said their ticking meant someone would soon die. What do they symbolize?',
+   options:[
+    {t:'Time running out, with death coming closer.', why:'Yes. The ticking is a countdown, like the watch and the heartbeat.'},
+    {t:'A pest problem in the house.', why:'Literally, yes, but Poe chooses them for the folklore.'},
+    {t:'Good fortune.', why:'They were a sign of death, not luck.'},
+    {t:'The narrator’s love of insects.', why:'He mentions them only as a sound of dread.'}], answer:0},
+  {id:'bn-police', label:'Police symbol',
+   passage:'And still the men chatted pleasantly, and smiled.',
+   prompt:'What might the calm, chatting officers represent?',
+   options:[
+    {t:'The ordinary, rational world. Their calm makes his guilty panic explode by contrast.', why:'Yes. They stand for normal life and the law, everything he is no longer part of.'},
+    {t:'Secret villains plotting against him.', why:'That’s what he believes, but nothing shows they suspect anything.'},
+    {t:'The old man’s family.', why:'They are officers sent because of a neighbor’s report.'},
+    {t:'Figures from his imagination.', why:'They really arrive. A neighbor heard a shriek.'}], answer:0}
+];
+
+const VERDICTS = [
+  {id:'mad', t:'Unreliable: his madness twists what he sees and hears.'},
+  {id:'guilty', t:'Unreliable: his guilt, not madness alone, drives him to confess.'},
+  {id:'reliable', t:'Reliable: he is sane and tells the story accurately.'}
+];
+
+const ACTS = {
+  vocab:{num:'I', title:'The Narrator’s Words', sub:'Vocabulary', icon:'quill',
+    epi:'Hearken! and observe how healthily—how calmly I can tell you the whole story.',
+    intro:'The narrator chooses every word carefully. Learn his words, and you will hear what he is really saying.',
+    stages:['v-study','v-lantern','v-match','v-detect']},
+  suspense:{num:'II', title:'The Twelve Chimes', sub:'How suspense is built', icon:'clock',
+    epi:'And this I did for seven long nights—every night just at midnight.',
+    intro:'Poe makes a short story feel like an endless night. Learn how he slows time, quickens the pulse, and keeps you from looking away.',
+    stages:['s-tools','s-chimes','s-dial','s-rewrite']},
+  symbols:{num:'III', title:'Beneath the Floorboards', sub:'Symbolism', icon:'planks',
+    epi:'I then took up three planks from the flooring of the chamber…',
+    intro:'An eye. A heartbeat. Three loose planks. Pry them up and find what they stand for.',
+    stages:['y-intro','y-planks','y-deep','y-bonus']},
+  finale:{num:'IV', title:'Build Your Case', sub:'Final verdict', icon:'seal',
+    epi:'If still you think me mad, you will think so no longer…',
+    intro:'Choose your verdict, select your strongest evidence, and write the claim that closes the case.',
+    stages:['f-case']}
+};
+
+const STAGES = {
+  'v-study':  {act:'vocab', name:'Study the Words', desc:'Flip all 16 word cards. Each one shows the line where Poe used the word.', scored:false},
+  'v-lantern':{act:'vocab', name:'The Lantern Round', desc:'Shine a thin ray of light across Poe’s sentences and find the missing word.'},
+  'v-match':  {act:'vocab', name:'Death-Watch Match', desc:'Match words to meanings while the beetle ticks in the wall.'},
+  'v-detect': {act:'vocab', name:'Read Like a Detective', desc:'What do his word choices reveal about him?'},
+  's-tools':  {act:'suspense', name:'The Narrator’s Toolkit', desc:'Open all eight tools Poe uses to build suspense.', scored:false},
+  's-chimes': {act:'suspense', name:'The Twelve Chimes', desc:'Twelve passages from midnight to confession. One stroke of the clock for each.'},
+  's-dial':   {act:'suspense', name:'The Tension Dial', desc:'Put passages in order from calm to frantic.'},
+  's-rewrite':{act:'suspense', name:'Write Like Poe', desc:'Pick the rewrite that builds more suspense.'},
+  'y-intro':  {act:'symbols', name:'What Is a Symbol?', desc:'The detective’s formula: literal → symbolic → proof.'},
+  'y-planks': {act:'symbols', name:'Pry Up the Planks', desc:'Twelve clues are hidden under the floor. Match each to its symbol.'},
+  'y-deep':   {act:'symbols', name:'The Three Great Symbols', desc:'The eye, the heartbeat, and the floorboards, examined closely.'},
+  'y-bonus':  {act:'symbols', name:'Shadows in the Corners', desc:'Four more symbols hiding in the dark.'},
+  'f-case':   {act:'finale', name:'Build Your Case', desc:'Verdict, evidence, and your written claim.', scored:false}
+};
+const ALL_STAGES = Object.keys(STAGES);
+
+const ACHIEVEMENTS = {
+  register:  {name:'Signed the Register', desc:'Enter the old man’s house.'},
+  sagacity:  {name:'Sagacity', desc:'Finish Act I: The Narrator’s Words.'},
+  acute:     {name:'Acute Senses', desc:'Finish a Death-Watch Match round in 45 seconds or less.'},
+  twelve:    {name:'The Clock Strikes Twelve', desc:'Finish the Twelve Chimes.'},
+  eighth:    {name:'The Eighth Night', desc:'Finish Act II: The Twelve Chimes.'},
+  planks:    {name:'Three Planks', desc:'Finish Act III: Beneath the Floorboards.'},
+  steady:    {name:'Nerves of Steel', desc:'Finish a scored stage with every answer right on the first try.'},
+  stealthily:{name:'Stealthily, Stealthily', desc:'Answer 8 questions in a row correctly on the first try.'},
+  confess:   {name:'I Admit the Deed!', desc:'Let the heart race so fast that the narrator confesses.'},
+  gold:      {name:'For His Gold I Had No Desire', desc:'Buy three items from the shop.'},
+  closed:    {name:'Case Closed', desc:'Seal your Case File.'}
+};
+
+const SHOP = [
+  {id:'oil', type:'use', name:'Lantern Oil', cost:3, desc:'Removes one wrong answer from a question. Single use.'},
+  {id:'tea', type:'use', name:'Calming Tea', cost:4, desc:'Slows the narrator’s racing pulse by 30 beats. Single use.'},
+  {id:'skin-lantern', type:'skin', skin:'lantern', name:'Lantern Glow', cost:15, desc:'Amber light, like a lantern opened a crack.', sw:'linear-gradient(90deg,#23170c,#e57f2f,#f4c461)'},
+  {id:'skin-paleeye', type:'skin', skin:'paleeye', name:'Pale Blue Eye', cost:15, desc:'Cold, filmy blue. The eye is watching.', sw:'linear-gradient(90deg,#141b20,#3e6e85,#c4dde7)'},
+  {id:'skin-bloodmoon', type:'skin', skin:'bloodmoon', name:'Blood Moon', cost:20, desc:'Deep crimson for the final night.', sw:'linear-gradient(90deg,#210a0b,#c3191a,#ffa070)'},
+  {id:'comp-raven', type:'companion', comp:'raven', name:'A Raven', cost:12, desc:'A visitor from another Poe poem perches beside you.'},
+  {id:'comp-cat', type:'companion', comp:'cat', name:'A Black Cat', cost:12, desc:'From another Poe tale. It is watching too.'},
+  {id:'comp-beetle', type:'companion', comp:'beetle', name:'Death-Watch Beetle', cost:10, desc:'Crawls along the bottom of the screen. Tick… tick…'},
+  {id:'cursor', type:'cursor', name:'The Dark Lantern', cost:25, desc:'The room darkens, except where your lantern shines.'}
+];
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const inFrame = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wordCount = s => (s.trim().match(/\S+/g) || []).length;
+const fmtTime = secs => { secs = Math.round(secs || 0); const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60); return h ? `${h} h ${m} min` : `${m} min`; };
+const fmtDate = ts => ts ? new Date(ts).toLocaleString([], {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}) : '—';
+
+const ICONS = {
+  eye:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.6" fill="currentColor"/><circle cx="10.8" cy="10.8" r="1" fill="#fff" opacity=".7"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1.1 5 2.9 1.4-1.8 3-2.9 5-2.9 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>',
+  planks:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="5" height="18" rx=".5"/><rect x="9.5" y="3" width="5" height="18" rx=".5" transform="rotate(-8 12 12)"/><rect x="16" y="3" width="5" height="18" rx=".5"/></g><g fill="currentColor"><circle cx="5.5" cy="5.5" r=".9"/><circle cx="18.5" cy="5.5" r=".9"/><circle cx="5.5" cy="18.5" r=".9"/><circle cx="18.5" cy="18.5" r=".9"/></g></svg>',
+  lantern:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M9 3h6M12 3v2.5"/><path d="M7.5 7h9l-1.2 11.5h-6.6z"/><path d="M6 20h12"/></g><path d="M12 10.2c1.6 1.6 1.6 3.6 0 5.2-1.6-1.6-1.6-3.6 0-5.2z" fill="currentColor"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/></svg>',
+  watch:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l3 2M10 2.8h4M12 2.8v2.7"/></g></svg>',
+  clock:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l3.5 2"/></g><g fill="currentColor"><circle cx="12" cy="4.6" r=".8"/><circle cx="19.4" cy="12" r=".8"/><circle cx="12" cy="19.4" r=".8"/><circle cx="4.6" cy="12" r=".8"/></g></svg>',
+  quill:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3C12.5 4 7.5 9 5.5 17l-1.3 4.2 1.9-.9c1-3 2.2-5 4.1-6.2h3.6l-1.8-1.8h3l-1-1.9h2.2C18.6 8.1 19.8 5.5 20.5 3z" fill="currentColor"/></svg>',
+  seal:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 15.3 7 22l5-2.5 5 2.5-1.5-6.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 6.6l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="currentColor"/></svg>',
+  coin:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor" opacity=".9"/><circle cx="12" cy="12" r="6.3" fill="none" stroke="#5a3a0a" stroke-width="1.2"/><path d="M12 8v8M9.8 10.2c0-1.2 1-1.8 2.2-1.8s2.2.6 2.2 1.6-1 1.4-2.2 1.8-2.2.8-2.2 1.8.9 1.7 2.2 1.7 2.2-.6 2.2-1.7" fill="none" stroke="#5a3a0a" stroke-width="1.2"/></svg>',
+  sound:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  soundlow:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  mute:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  book:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5zM4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 7h7M8 10h5" stroke="currentColor" stroke-width="1.4"/></svg>',
+  scroll:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4zM6 4a2 2 0 0 0-2 2v1h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 9h6M9.5 12h6M9.5 15h4" stroke="currentColor" stroke-width="1.4"/></svg>',
+  chest:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v9H3z M3 11h18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="10.5" y="10" width="3" height="4" rx=".6" fill="currentColor"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9 17h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+  home:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4l8.5 7.5M6 10v10h4.5v-6h3v6H18V10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+  clipboard:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v3H8z M6 5.5H5v15.5h14V5.5h-1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 11h8M8 14.5h8M8 18h5" stroke="currentColor" stroke-width="1.5"/></svg>',
+  beetle:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M5 9l-3-2M5 13H2M5 17l-3 2M19 9l3-2M19 13h3M19 17l3 2M10 4.5 8.5 2.5M14 4.5l1.5-2"/></g><ellipse cx="12" cy="13" rx="6" ry="7.5" fill="currentColor"/><circle cx="12" cy="5.5" r="2.4" fill="currentColor"/><path d="M12 6v14" stroke="#000" stroke-width="1" opacity=".5"/></svg>'
+};
+const icon = n => ICONS[n] || '';
+
+let eyeN = 0;
+function eyeSVG(extra = '') {
+  const n = ++eyeN;
+  return `<svg class="evil-eye ${extra}" viewBox="0 0 300 160" aria-hidden="true">
+  <defs>
+    <radialGradient id="scl${n}" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#efe6d2"/><stop offset=".72" stop-color="#d4c2a1"/><stop offset="1" stop-color="#7c5b45"/></radialGradient>
+    <radialGradient id="iri${n}" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#dbe9ee"/><stop offset=".38" stop-color="#a7c4d1"/><stop offset=".82" stop-color="#668b9d"/><stop offset="1" stop-color="#2f4a57"/></radialGradient>
+    <radialGradient id="flm${n}" cx="44%" cy="40%" r="62%"><stop offset="0" stop-color="#f5f8f7" stop-opacity=".78"/><stop offset=".55" stop-color="#e2e9e9" stop-opacity=".38"/><stop offset="1" stop-color="#e2e9e9" stop-opacity="0"/></radialGradient>
+    <clipPath id="clp${n}"><path d="M14 80 Q150 -14 286 80 Q150 174 14 80Z"/></clipPath>
+  </defs>
+  <g clip-path="url(#clp${n})">
+    <rect width="300" height="160" fill="url(#scl${n})"/>
+    <g stroke="#9b2a22" stroke-width="1.2" fill="none" opacity=".55">
+      <path d="M16 80 C50 70 70 88 100 74"/><path d="M28 98 C60 92 80 102 104 92"/><path d="M58 58 C78 66 92 60 106 70"/>
+      <path d="M284 80 C250 72 236 90 202 76"/><path d="M272 98 C240 94 222 104 198 94"/><path d="M244 58 C222 66 210 60 196 70"/>
+    </g>
+    <g class="iris">
+      <circle cx="150" cy="80" r="44" fill="url(#iri${n})"/>
+      <circle cx="150" cy="80" r="44" fill="none" stroke="#24363f" stroke-width="2.5"/>
+      <circle cx="150" cy="80" r="15" fill="#0a0a0a"/>
+      <circle cx="150" cy="80" r="47" fill="url(#flm${n})"/>
+      <circle cx="137" cy="67" r="5" fill="#fff" opacity=".7"/>
+    </g>
+    <rect class="lid lid-top" x="0" y="0" width="300" height="82" fill="#140d0a"/>
+    <rect class="lid lid-bot" x="0" y="78" width="300" height="82" fill="#140d0a"/>
+  </g>
+  <path d="M14 80 Q150 -14 286 80 Q150 174 14 80Z" fill="none" stroke="#3a241b" stroke-width="5"/>
+</svg>`;
+}
+
+/* =========================================================
+   STATE (saved in this browser)
+   ========================================================= */
+const KEY = 'tellTaleHeart.v1';
+const fresh = () => ({
+  name:'', created:Date.now(), lastActive:Date.now(),
+  gold:0, bpm:72, streak:0, bestStreak:0, confessions:0, hintsUsed:0,
+  items:{oil:1, tea:0}, owned:[], skin:'midnight', companion:null, cursor:false,
+  achievements:[], stages:{}, results:{}, paid:{}, evidence:[],
+  studySeen:[], toolsSeen:[], caseFile:null, roundProg:{},
+  time:{vocab:0, suspense:0, symbols:0, finale:0},
+  sound:'on'
+});
+/* Load a save defensively: any field that is missing or the wrong type falls back to its default,
+   so a damaged or older save can never leave a student staring at a blank screen. */
+function repair(saved) {
+  const base = fresh();
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return base;
+  const kind = v => v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v;
+  for (const k of Object.keys(saved)) {
+    const d = base[k], v = saved[k];
+    if (!(k in base)) { if (v != null) base[k] = v; continue; }
+    if (kind(d) === 'null') { base[k] = v; continue; }
+    if (kind(v) !== kind(d)) continue;
+    base[k] = kind(d) === 'object' && Object.keys(d).length ? Object.assign(d, v) : v;
+  }
+  for (const k of Object.keys(base.items)) if (typeof base.items[k] !== 'number') base.items[k] = 0;
+  for (const k of Object.keys(base.time)) if (typeof base.time[k] !== 'number') base.time[k] = 0;
+  const c = base.caseFile;
+  if (c && (typeof c !== 'object' || !Array.isArray(c.evidence) || typeof c.claim !== 'string')) base.caseFile = null;
+  const d = base.caseDraft;
+  if (d && (typeof d !== 'object' || !Array.isArray(d.picks))) delete base.caseDraft;
+  base.bpm = clamp(Number(base.bpm) || 72, 60, 180);
+  return base;
+}
+let S = fresh(), canSave = true;
+try { const raw = localStorage.getItem(KEY); if (raw) S = repair(JSON.parse(raw)); } catch (e) { S = fresh(); }
+function save() { S.lastActive = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); canSave = true; } catch (e) { canSave = false; } }
+
+/* =========================================================
+   SOUND (all synthesized in the browser, nothing to download)
+   ========================================================= */
+const Sound = (() => {
+  let ctx = null, master = null, noiseBuf = null, amb = null;
+  const on = () => S.sound !== 'off';
+  function ensure() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC(); master = ctx.createGain(); master.gain.value = .75; master.connect(ctx.destination);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  function env(g, t, a, peak, dec) { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + dec); }
+  function thump(t, vol, f) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f * 1.7, t); o.frequency.exponentialRampToValueAtTime(f * .55, t + .14);
+    env(g, t, .008, vol, .2); o.connect(g).connect(master); o.start(t); o.stop(t + .25);
+  }
+  function noise(t, dur, type, freq, vol, q = 1) {
+    const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
+    env(g, t, .004, vol, dur); s.connect(f).connect(g).connect(master); s.start(t); s.stop(t + dur + .05);
+  }
+  function tone(t, freq, dur, type, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.value = freq;
+    env(g, t, .01, vol, dur); o.connect(g).connect(master); o.start(t); o.stop(t + dur + .05);
+  }
+  return {
+    unlock() { if (on()) ensure(); },
+    heartbeat(bpm) { if (!on() || S.sound === 'quiet' || !ensure()) return; const t = ctx.currentTime, v = .22 + clamp((bpm - 60) / 120, 0, 1) * .55; thump(t, v, 58); thump(t + .17, v * .7, 50); },
+    tick() { if (!on() || !ensure()) return; noise(ctx.currentTime, .03, 'highpass', 3200, .25); },
+    creak() { if (!on() || !ensure()) return; const t = ctx.currentTime, o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(70, t); o.frequency.linearRampToValueAtTime(110, t + .25); o.frequency.linearRampToValueAtTime(80, t + .55);
+      f.type = 'bandpass'; f.frequency.setValueAtTime(600, t); f.frequency.linearRampToValueAtTime(1400, t + .5); f.Q.value = 8;
+      env(g, t, .05, .18, .55); o.connect(f).connect(g).connect(master); o.start(t); o.stop(t + .7); },
+    chime() { if (!on() || !ensure()) return; const t = ctx.currentTime; [1, 2.01, 2.76, 5.4].forEach((m, i) => tone(t, 392 * m, 1.8 - i * .3, 'sine', .14 / (i + 1))); },
+    good() { if (!on() || !ensure()) return; const t = ctx.currentTime; tone(t, 523.25, .5, 'sine', .14); tone(t + .09, 783.99, .6, 'sine', .11); },
+    bad() { if (!on() || !ensure()) return; const t = ctx.currentTime; tone(t, 110, .45, 'triangle', .2); tone(t, 116.5, .45, 'triangle', .16); },
+    coin() { if (!on() || !ensure()) return; const t = ctx.currentTime; tone(t, 1318.5, .12, 'square', .04); tone(t + .07, 1975.5, .2, 'square', .035); },
+    click() { if (!on() || !ensure()) return; noise(ctx.currentTime, .02, 'bandpass', 1800, .2, 3); },
+    scream() { if (!on() || !ensure()) return; const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(700, t); o.frequency.exponentialRampToValueAtTime(1300, t + .25); o.frequency.exponentialRampToValueAtTime(500, t + .9);
+      env(g, t, .05, .08, .9); o.connect(g).connect(master); o.start(t); o.stop(t + 1); },
+    ambience(start) {
+      if (!start || !on()) { if (amb) { try { amb.src.stop(); } catch (e) {} amb = null; } return; }
+      if (amb || !ensure()) return;
+      const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+      src.buffer = noiseBuf; src.loop = true; f.type = 'lowpass'; f.frequency.value = 380; g.gain.value = .035;
+      lfo.frequency.value = .07; lg.gain.value = 220; lfo.connect(lg).connect(f.frequency); lfo.start();
+      src.connect(f).connect(g).connect(master); src.start(); amb = {src};
+    }
+  };
+})();
+window.addEventListener('pointerdown', () => Sound.unlock(), {once:true});
+
+/* =========================================================
+   HUD: heart, gold, sound
+   ========================================================= */
+const main = $('#main');
+let inHouse = false, beatTimer = null;
+const cur = {screen:'title', act:null};
+
+function updateHud() {
+  $('#bpm').textContent = S.bpm;
+  $('#gold').textContent = S.gold;
+  const dread = clamp((S.bpm - 72) / 108, 0, 1);
+  document.documentElement.style.setProperty('--dread', dread.toFixed(2));
+  document.documentElement.style.setProperty('--beat', (60 / S.bpm).toFixed(3) + 's');
+  const lbl = {
+    on:['sound', 'Sound', 'Sound is on, with the heartbeat. Click to silence just the heartbeat.'],
+    quiet:['soundlow', 'Quiet', 'Sound is on, heartbeat off. Click to mute everything.'],
+    off:['mute', 'Muted', 'All sound is muted. Click to turn sound back on.']
+  }[S.sound] || ['sound', 'Sound', ''];
+  const sb = $('#soundBtn');
+  sb.innerHTML = `<span class="ico">${icon(lbl[0])}</span><span class="tl">${lbl[1]}</span>`;
+  sb.dataset.tip = lbl[2];
+  sb.setAttribute('aria-label', lbl[2]);
+  document.body.dataset.skin = S.skin;
+  $('#lanternCursor').hidden = !S.cursor;
+  renderCompanion();
+}
+function beatLoop() {
+  clearTimeout(beatTimer);
+  if (inHouse && document.visibilityState === 'visible') Sound.heartbeat(S.bpm);
+  beatTimer = setTimeout(beatLoop, 60000 / S.bpm);
+}
+function addGold(n) {
+  S.gold += n; save(); updateHud();
+  const g = $('#goldHud'); g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump');
+  Sound.coin();
+}
+function setBpm(v) {
+  S.bpm = clamp(Math.round(v), 60, 180); save(); updateHud();
+  if (S.bpm >= 180) confess();
+}
+function heartWrong() { S.streak = 0; hurt(); setBpm(S.bpm + 15); }
+function heartRight() {
+  S.streak++; S.bestStreak = Math.max(S.bestStreak, S.streak);
+  if (S.streak >= 8) unlock('stealthily');
+  setBpm(S.bpm - 5 - (S.streak % 3 === 0 ? 10 : 0));
+}
+function confess() {
+  if ($('.confession')) return;
+  S.confessions++; unlock('confess'); Sound.scream();
+  const el = document.createElement('div');
+  el.className = 'confession'; el.setAttribute('role', 'alertdialog'); el.setAttribute('aria-modal', 'true');
+  el.innerHTML = `<div class="rings" aria-hidden="true"><i></i><i></i><i></i></div><div class="inner">
+    <div class="big-heart">${icon('heart')}</div>
+    <blockquote>“Villains!” I shrieked, “dissemble no more! I admit the deed!—tear up the planks! here, here!—It is the beating of his hideous heart!”</blockquote>
+    <p>The heart gave you away. Too many wrong answers sent the narrator’s pulse to 180. Read each explanation closely; they are your best defense.</p>
+    <button class="btn btn-primary" id="steady">Steady my nerves</button></div>`;
+  document.body.appendChild(el);
+  $('#steady', el).focus();
+  $('#steady', el).onclick = () => { el.remove(); S.bpm = 96; S.streak = 0; save(); updateHud(); };
+}
+
+/* =========================================================
+   TOASTS, ACHIEVEMENTS, EVIDENCE
+   ========================================================= */
+function toast(html, ico = 'scroll') {
+  const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = icon(ico) + `<div>${html}</div>`;
+  $('#toasts').appendChild(t); setTimeout(() => t.remove(), 3800);
+}
+function unlock(id) {
+  if (S.achievements.includes(id)) return;
+  S.achievements.push(id); save();
+  toast(`<strong>Award: ${ACHIEVEMENTS[id].name}</strong><br><span class="small muted">+5 gold</span>`, 'trophy');
+  addGold(5);
+}
+function fileEvidence(id, quote, label) {
+  if (!quote || S.evidence.some(e => e.id === id)) return;
+  S.evidence.push({id, quote: quote.replace(/<[^>]+>/g, ''), label}); save();
+  toast('<strong>Evidence filed.</strong> <span class="small muted">Added to your Evidence Locker.</span>', 'scroll');
+}
+
+/* =========================================================
+   RESULTS (what the teacher report reads)
+   ========================================================= */
+function flyCoin(from) {
+  if (RM || !from || !from.isConnected) return;
+  const a = from.getBoundingClientRect(), t = $('#goldHud').getBoundingClientRect();
+  const d = document.createElement('div'); d.className = 'fly-coin'; d.innerHTML = icon('coin');
+  document.body.appendChild(d);
+  const x0 = a.left + a.width / 2 - 11, y0 = a.top + a.height / 2 - 11, x1 = t.left + 10, y1 = t.top + t.height / 2 - 11;
+  d.animate([
+    {transform:`translate(${x0}px,${y0}px) scale(.5)`, opacity:0},
+    {transform:`translate(${x0}px,${y0 - 46}px) scale(1.25)`, opacity:1, offset:.25},
+    {transform:`translate(${x1}px,${y1}px) scale(.8)`, opacity:1}
+  ], {duration:800, easing:'cubic-bezier(.5,0,.3,1)'}).onfinish = () => d.remove();
+  setTimeout(() => d.remove(), 1500);
+}
+function hurt() {
+  const f = $('#flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+  if (!RM) main.animate([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(4px)'},{transform:'translateX(-2px)'},{transform:'translateX(0)'}], {duration:280});
+}
+function record(id, act, label, firstOk, fromEl) {
+  const r = S.results[id] || {attempts:0, everRight:false};
+  r.attempts++; r.first = firstOk; r.act = act; r.label = label; r.at = Date.now();
+  if (firstOk) r.everRight = true;
+  S.results[id] = r;
+  if (firstOk && !S.paid[id]) { S.paid[id] = 1; flyCoin(fromEl); setTimeout(() => addGold(1), RM ? 0 : 700); }
+  save();
+}
+
+/* =========================================================
+   MULTIPLE-CHOICE QUESTION
+   ========================================================= */
+let activeMcq = null;
+function mcq(host, q, act, onNext) {
+  const opts = shuffle(q.options.map((o, i) => ({...o, ok: i === q.answer})));
+  let first = true, done = false;
+  const shownAt = performance.now();
+  const passageHtml = q.passage ? `<blockquote class="passage ${q.lantern ? 'lantern-passage' : ''}"><span class="ptext">${q.passage}</span>${q.lantern ? '<span class="darkness"></span>' : ''}</blockquote>` : '';
+  host.innerHTML = `<div class="fade-in">${q.banner || ''}${passageHtml}
+    ${q.lantern ? `<div class="lantern-hint"><button class="btn btn-lantern" data-light>${icon('lantern')} Light the whole passage</button><span>Or move your pointer or finger across the dark to read by lantern light.</span></div>` : ''}
+    <p class="prompt">${q.prompt}</p>
+    ${q.clueDef ? `<div class="clue-row"><button class="btn btn-clue" data-clue>${icon('book')} Clue: what does the missing word mean?</button><p class="clue-text" hidden>The missing word is ${/^[aeiou]/.test(q.cluePos) ? 'an' : 'a'} ${q.cluePos} that means <strong>${q.clueDef}</strong>.</p></div>` : ''}
+    <div class="opts">${opts.map((o, i) => `<button class="opt" data-i="${i}"><span class="key">${'ABCD'[i]}</span><span>${o.t}</span></button>`).join('')}</div>
+    <div class="mcq-foot"><span class="key-hint small muted">Keys 1–4 or A–D answer.</span><button class="oil-btn" data-oil ${S.items.oil ? '' : 'disabled'}>Use lantern oil (${S.items.oil} left): remove a wrong answer</button></div>
+    <div class="feedback" aria-live="polite"></div></div>`;
+  const fb = $('.feedback', host), btns = $$('.opt', host);
+
+  if (q.lantern) setupLantern($('.lantern-passage', host), $('[data-light]', host));
+  const clueBtn = $('[data-clue]', host);
+  if (clueBtn) clueBtn.onclick = () => {
+    $('.clue-text', host).hidden = false;
+    clueBtn.disabled = true; clueBtn.innerHTML = icon('book') + ' Clue revealed';
+    S.cluesUsed = (S.cluesUsed || 0) + 1; save(); Sound.click();
+  };
+
+  function choose(i) {
+    if (done || !host.isConnected) return;
+    /* a double-click on the previous Continue button must not answer this question */
+    if (performance.now() - shownAt < 450) return;
+    const o = opts[i], b = btns[i];
+    if (b.disabled) return;
+    if (o.ok) {
+      done = true; b.classList.add('correct'); $('.key', b).textContent = '✓';
+      btns.forEach(x => x.disabled = true);
+      if (first) { record(q.id, act, q.label, true, b); heartRight(); }
+      Sound.good();
+      if (q.onCorrect) q.onCorrect(host);
+      fb.innerHTML = `<div class="fb good"><div class="fb-title">${first ? 'Correct.' : 'There it is.'}</div><div>${o.why}</div>
+        <div><button class="btn btn-primary" data-next>${q.nextLabel || 'Continue'} →</button></div></div>`;
+      $('[data-next]', fb).onclick = () => { activeMcq = null; onNext(first); };
+      $('[data-next]', fb).focus({preventScroll:true});
+      if (q.evidence !== false) fileEvidence(q.id, q.evidence || q.passage, q.label);
+    } else {
+      b.classList.add('wrong'); b.disabled = true; $('.key', b).textContent = '✕';
+      if (first) { record(q.id, act, q.label, false); first = false; }
+      heartWrong(); Sound.bad();
+      fb.innerHTML = `<div class="fb bad"><div class="fb-title">Not quite.</div><div>${o.why}</div><div class="small muted">Try another answer.</div></div>`;
+    }
+  }
+  btns.forEach((b, i) => b.onclick = () => choose(i));
+  $('[data-oil]', host).onclick = e => {
+    if (!S.items.oil || done) return;
+    const wrongs = btns.filter((b, i) => !opts[i].ok && !b.disabled);
+    if (wrongs.length <= 1) { toast('Only one wrong answer is left. Trust your reading!', 'lantern'); return; }
+    const pick = wrongs[Math.floor(Math.random() * wrongs.length)];
+    pick.disabled = true; pick.classList.add('removed');
+    S.items.oil--; S.hintsUsed++; save();
+    e.currentTarget.textContent = `Use lantern oil (${S.items.oil} left): remove a wrong answer`;
+    if (!S.items.oil) e.currentTarget.disabled = true;
+    Sound.click();
+  };
+  activeMcq = {choose, count: opts.length, host};
+}
+document.addEventListener('keydown', e => {
+  if (!activeMcq || !activeMcq.host.isConnected || (e.target instanceof Element && e.target.matches('input, textarea')) || e.metaKey || e.ctrlKey || e.altKey || $('.modal-back') || $('.confession')) return;
+  const k = e.key.toLowerCase(); const map = {'1':0,'2':1,'3':2,'4':3,a:0,b:1,c:2,d:3};
+  if (k in map && map[k] < activeMcq.count) { e.preventDefault(); activeMcq.choose(map[k]); }
+});
+
+function setupLantern(box, lightBtn) {
+  let auto = true, t0 = performance.now(), raf;
+  const set = (x, y) => { box.style.setProperty('--lx', x + 'px'); box.style.setProperty('--ly', y + 'px'); };
+  const drift = now => {
+    if (!auto || !box.isConnected) return;
+    const r = box.getBoundingClientRect(), s = (now - t0) / 1000;
+    set(r.width * (.5 + .38 * Math.sin(s * .9)), r.height * (.5 + .3 * Math.sin(s * 1.7)));
+    raf = requestAnimationFrame(drift);
+  };
+  raf = requestAnimationFrame(drift);
+  const move = e => { auto = false; cancelAnimationFrame(raf); const r = box.getBoundingClientRect(); set(e.clientX - r.left, e.clientY - r.top); };
+  box.addEventListener('pointermove', move); box.addEventListener('pointerdown', move);
+  lightBtn.onclick = () => { box.classList.add('lit'); auto = false; lightBtn.disabled = true; lightBtn.innerHTML = icon('lantern') + ' Passage lit'; Sound.click(); };
+}
+
+/* =========================================================
+   SCREENS
+   ========================================================= */
+function show(html) { main.innerHTML = html; window.scrollTo({top:0}); }
+function setAct(act) { cur.act = act; }
+
+function renderTitle() {
+  cur.screen = 'title'; setAct(null); inHouse = false; Sound.ambience(false);
+  $('#topbar').style.visibility = 'visible';
+  const returning = !!S.name;
+  show(`<section class="title-screen fade-in">
+    ${eyeSVG('title-eye')}
+    <h1 class="game-title"><span class="the">The</span>Tell-Tale <span class="heart-word">Heart</span></h1>
+    <p class="kicker">An investigation in three acts · after Edgar Allan Poe, 1843</p>
+    <p class="epigraph">“TRUE!—nervous—very, very dreadfully nervous I had been and am; but why will you say that I am mad?”</p>
+    <form class="register" id="reg">
+      <label for="nameIn">${returning ? 'Welcome back, officer' : 'Sign the police register'}</label>
+      <input id="nameIn" maxlength="40" autocomplete="off" placeholder="Your name" value="${esc(S.name)}" required>
+      <button class="btn btn-primary" type="submit">${returning ? 'Return to the house' : 'Enter the house'}</button>
+      <p class="small muted">It is four o’clock in the morning. A neighbour heard a shriek during the night, and you have been sent to search the old man’s house.</p>
+    </form>
+  </section>`);
+  $('#reg').onsubmit = e => {
+    e.preventDefault();
+    const n = $('#nameIn').value.trim();
+    if (!n) { $('#nameIn').focus(); return; }
+    S.name = n; save(); Sound.unlock(); Sound.creak(); unlock('register'); renderHub();
+  };
+}
+
+function stageDone(id) { return !!(S.stages[id] && S.stages[id].done); }
+function actProgress(act) { const st = ACTS[act].stages; return {done: st.filter(stageDone).length, total: st.length}; }
+function finaleOpen() { return ['vocab','suspense','symbols'].every(a => actProgress(a).done === actProgress(a).total); }
+
+function renderHub() {
+  if (!S.name) return renderTitle();
+  cur.screen = 'hub'; setAct(null); inHouse = true; Sound.ambience(true); beatLoop();
+  const total = ALL_STAGES.length, done = ALL_STAGES.filter(stageDone).length;
+  const nextUp = nextStage();
+  const door = act => {
+    const a = ACTS[act], p = actProgress(act), locked = act === 'finale' && !finaleOpen();
+    const isDone = p.done === p.total;
+    return `<button class="door ${locked ? 'locked' : ''} ${isDone ? 'done' : ''}" data-act="${act}" ${locked ? 'aria-disabled="true"' : ''}>
+      <span class="door-icon">${icon(a.icon)}</span>
+      <span class="act-no">Act ${a.num} · ${a.sub}</span>
+      <h3>${a.title}</h3>
+      <span class="small muted">${locked ? 'Locked. Finish all three acts to build your case.' : a.intro}</span>
+      <span class="pips">${a.stages.map(s => `<span class="pip ${stageDone(s) ? 'on' : ''}"></span>`).join('')}</span>
+      <span class="knob" aria-hidden="true"></span>
+    </button>`;
+  };
+  show(`<section class="fade-in">
+    <div class="hub-head"><div class="hub-text">
+      <span class="kicker">Case No. 1843 · The old man’s house</span>
+      <h2>Four o’clock, still dark as midnight</h2>
+      <p class="muted" style="max-width:62ch">Officer ${esc(S.name)}, the narrator swears he is not mad. Search each room, gather your evidence, and decide for yourself. The heart above is <em>his</em>. Every wrong answer makes it race.</p>
+      <div class="overall"><span>${done} of ${total} stages</span><span class="bar"><i style="width:${Math.round(done / total * 100)}%"></i></span></div>
+      ${canSave ? '' : '<p class="save-warn">This browser is not saving progress (private browsing or blocked site data). Finish in one sitting, or ask your teacher about switching browsers.</p>'}
+      ${nextUp ? `<button class="btn btn-primary continue-btn" id="continueBtn">${done || inProgress(nextUp) ? 'Continue' : 'Begin'}: ${STAGES[nextUp].name} →</button>` : ''}
+    </div><div class="hub-eye" aria-hidden="true">${eyeSVG()}</div></div>
+    <div class="doors">${['vocab','suspense','symbols','finale'].map(door).join('')}</div>
+    <div class="hub-tools">
+      <button class="btn" data-open="notebook">${icon('book').replace('<svg','<svg width="18" height="18"')} Notebook</button>
+      <button class="btn" data-open="evidence">${icon('scroll').replace('<svg','<svg width="18" height="18"')} Evidence Locker (${S.evidence.length})</button>
+      <button class="btn" data-open="shop">${icon('chest').replace('<svg','<svg width="18" height="18"')} The Old Man’s Chest</button>
+      ${S.caseFile ? `<button class="btn" data-open="case">${icon('seal').replace('<svg','<svg width="18" height="18"')} View Case File</button>` : ''}
+    </div>
+  </section>`);
+  $$('.door').forEach(d => d.onclick = () => {
+    if (d.classList.contains('locked')) { toast('Finish the first three acts to unlock your case.', 'seal'); return; }
+    Sound.creak();
+    if (RM) return renderAct(d.dataset.act);
+    d.classList.add('opening');
+    setTimeout(() => { if (d.isConnected) renderAct(d.dataset.act); }, 380);
+  });
+  const cb = $('#continueBtn'); if (cb) cb.onclick = () => { Sound.creak(); nextUp === 'f-case' ? runFinale() : startStage(nextUp); };
+  $$('[data-open]').forEach(b => b.onclick = () => ({notebook:openNotebook, evidence:openEvidence, shop:openShop, case:() => showCaseFile(true)})[b.dataset.open]());
+}
+
+/* The stage a returning student most likely wants: one left mid-round, else the first unfinished one. */
+function nextStage() {
+  const open = ['vocab','suspense','symbols'].flatMap(a => ACTS[a].stages.filter((id, i) => !stageDone(id) && (i === 0 || stageDone(ACTS[a].stages[i - 1]))));
+  const mid = open.find(inProgress);
+  if (mid) return mid;
+  if (open.length) return open[0];
+  return finaleOpen() && !S.caseFile ? 'f-case' : null;
+}
+function renderAct(act) {
+  if (act === 'finale') return runFinale();
+  cur.screen = 'act'; setAct(act);
+  const a = ACTS[act];
+  const items = a.stages.map((id, i) => {
+    const st = STAGES[id], s = S.stages[id] || {}, unlocked = i === 0 || stageDone(a.stages[i - 1]);
+    const meta = s.done ? (st.scored === false ? 'Done' : `Best ${s.best}/${s.total}`) : (!unlocked ? 'Locked' : inProgress(id) ? 'In progress' : 'Ready');
+    return `<button class="stage-item ${s.done ? 'done' : ''}" data-stage="${id}" ${unlocked ? '' : 'disabled'}>
+      <span class="num">${s.done ? '✓' : i + 1}</span>
+      <span><h3>${st.name}</h3><span class="small muted">${st.desc}</span></span>
+      <span class="meta">${s.done && st.scored !== false ? `<span class="stars">${stars(s.best, s.total)}</span><br>` : ''}${meta}</span>
+    </button>`;
+  }).join('');
+  show(`<section class="room fade-in">
+    <button class="btn-link" data-back>← Back to the house</button>
+    <div class="act-head">
+      <span class="act-mark" aria-hidden="true">${icon(a.icon)}</span>
+      <span class="kicker">Act ${a.num} · ${a.sub}</span>
+      <h2>${a.title}</h2>
+      <p class="epigraph">“${a.epi}”</p>
+      <p class="muted">${a.intro}</p>
+    </div>
+    <div class="stage-list">${items}</div>
+  </section>`);
+  $('[data-back]').onclick = renderHub;
+  $$('[data-stage]').forEach(b => b.onclick = () => { Sound.click(); startStage(b.dataset.stage); });
+}
+function inProgress(id) {
+  if (S.roundProg[id]) return true;
+  if (id === 'v-study') return S.studySeen.length > 0;
+  if (id === 's-tools') return S.toolsSeen.length > 0;
+  return false;
+}
+function stars(score, total) { if (!total) return ''; const p = score / total; const n = p >= .9 ? 3 : p >= .7 ? 2 : 1; return '★'.repeat(n) + '☆'.repeat(3 - n); }
+
+function frame(id, inner, progress) {
+  const st = STAGES[id], a = ACTS[st.act];
+  show(`<section class="room fade-in">
+    <div class="stage-head">
+      <button class="btn-link" data-back>← ${a.title}</button>
+      <div class="grow"></div>
+      <span class="progress-text" id="ptext">${progress || ''}</span>
+    </div>
+    <span class="kicker">Act ${a.num} · ${st.name}</span>
+    <h2 style="margin:6px 0 14px">${st.name}</h2>
+    <div class="progress-line"><i id="pline" style="width:0%"></i></div>
+    <div id="stageBody">${inner || ''}</div>
+  </section>`);
+  $('[data-back]').onclick = () => { clearInterval(matchTimer); st.act === 'finale' ? renderHub() : renderAct(st.act); };
+  return $('#stageBody');
+}
+function setProgress(i, n, label) {
+  const p = $('#pline'); if (p) p.style.width = Math.round(i / n * 100) + '%';
+  const t = $('#ptext'); if (t) t.textContent = label || `${Math.min(i + 1, n)} of ${n}`;
+}
+
+function startStage(id) {
+  cur.screen = 'stage'; setAct(STAGES[id].act);
+  try { stageRunner(id); }
+  catch (e) {
+    /* a damaged half-finished round: drop it and start the stage over rather than freeze */
+    delete S.roundProg[id]; save();
+    stageRunner(id);
+  }
+}
+function stageRunner(id) {
+  ({ 'v-study':runStudy, 'v-lantern':runLantern, 'v-match':runMatch, 'v-detect':() => runSequence(id, DETECT.map(q => ({...q, evidence:false}))),
+     's-tools':runTools, 's-chimes':runChimes, 's-dial':runDial, 's-rewrite':runRewrite,
+     'y-intro':runSymIntro, 'y-planks':runPlanks, 'y-deep':runDeep, 'y-bonus':() => runSequence(id, BONUS) })[id](id);
+}
+
+function completeStage(id, score, total, note, reviewIds) {
+  const st = S.stages[id] || {plays:0};
+  const firstTime = !st.done;
+  st.done = true; st.plays = (st.plays || 0) + 1; st.at = Date.now();
+  delete S.roundProg[id];
+  if (score != null) { st.last = score; st.total = total; st.best = Math.max(st.best || 0, score); }
+  S.stages[id] = st;
+  if (firstTime) addGold(3);
+  if (score != null && score === total && total > 0) unlock('steady');
+  if (id === 's-chimes') unlock('twelve');
+  const act = STAGES[id].act;
+  if (act !== 'finale' && actProgress(act).done === actProgress(act).total) unlock({vocab:'sagacity', suspense:'eighth', symbols:'planks'}[act]);
+  save();
+  if (id === 'f-case') return;
+  const stagesInAct = ACTS[act].stages, next = stagesInAct[stagesInAct.indexOf(id) + 1];
+  const pct = score != null && total ? Math.round(score / total * 100) : null;
+  const review = [...new Set((reviewIds || []).map(x => S.results[x]).filter(r => r && r.first === false).map(r => r.label))];
+  const line = pct == null ? 'Well studied.' : pct >= 90 ? 'Your sagacity is remarkable.' : pct >= 70 ? 'A steady hand. Most of the truth is in view.' : 'The heart is still pounding. Review the explanations and try again.';
+  setProgress(1, 1, 'Complete');
+  $('#stageBody').innerHTML = `<div class="fade-in" style="display:grid;gap:16px;justify-items:start">
+    ${pct != null ? `<div class="big-score"><span id="countUp">${RM ? score : 0}</span> / ${total}</div><div class="stars star-pop" style="font-size:1.6rem">${stars(score, total).split('').map((s, k) => `<span style="animation-delay:${.35 + k * .18}s">${s}</span>`).join('')}</div>` : ''}
+    <p class="epigraph">${note || line}</p>
+    ${review.length ? `<div class="review-box"><span class="kicker">Worth another look</span><p class="small muted">You missed these on the first try. Open the Notebook to review them, or try the stage again.</p><div class="review-chips">${review.map(l => `<span>${esc(l)}</span>`).join('')}</div></div>` : ''}
+    ${firstTime ? '<p class="small muted">+3 gold for completing this stage.</p>' : ''}
+    <div class="row">
+      ${next ? `<button class="btn btn-primary" data-next>Next: ${STAGES[next].name} →</button>` : `<button class="btn btn-primary" data-hub>Return to the house →</button>`}
+      ${STAGES[id].scored === false ? '' : '<button class="btn" data-retry>Try this stage again</button>'}
+      <button class="btn-link" data-act>Back to Act ${ACTS[act].num}</button>
+    </div></div>`;
+  const cu = $('#countUp');
+  if (cu && !RM && score) {
+    const t0 = performance.now(), dur = 600 + score * 40;
+    const tickUp = now => { const p = Math.min(1, (now - t0) / dur); cu.textContent = Math.round(score * (1 - Math.pow(1 - p, 3))); if (p < 1 && cu.isConnected) requestAnimationFrame(tickUp); };
+    requestAnimationFrame(tickUp);
+  }
+  const nb = $('[data-next]'); if (nb) nb.onclick = () => startStage(next);
+  const hb = $('[data-hub]'); if (hb) hb.onclick = renderHub;
+  const rb = $('[data-retry]'); if (rb) rb.onclick = () => startStage(id);
+  $('[data-act]').onclick = () => renderAct(act);
+}
+
+/* The break between Round 1 and Round 2 of a stage. Progress is already saved,
+   so a student can stop here and pick up Round 2 another day. */
+function intermission(id, {score, total, note, onContinue}) {
+  clearInterval(matchTimer);
+  setProgress(1, 2, 'Round 1 of 2 complete');
+  const calm = clamp(S.bpm - 72, 0, 20);
+  if (calm) setBpm(S.bpm - calm);
+  const body = $('#stageBody');
+  body.innerHTML = `<div class="intermission fade-in">
+    <svg class="candle" viewBox="0 0 46 80" aria-hidden="true">
+      <circle class="glow" cx="23" cy="20" r="19" fill="rgba(227,170,76,.16)"/>
+      <path class="flame" d="M23 6c5 7 7.5 11 7.5 15.5a7.5 7.5 0 0 1-15 0C15.5 17 18 13 23 6z" fill="#f2b44c"/>
+      <path class="flame inner" d="M23 13c2.6 4 3.6 6.2 3.6 8.4a3.6 3.6 0 0 1-7.2 0c0-2.2 1-4.4 3.6-8.4z" fill="#fff1c9"/>
+      <line x1="23" y1="28" x2="23" y2="33" stroke="#222" stroke-width="1.6"/>
+      <rect x="15" y="33" width="16" height="39" rx="2" fill="#e9dcc0"/>
+      <path d="M15 37c3 2 5-1 7 1s3 7 5 3 4-3 4-3" fill="none" stroke="#cbb894" stroke-width="2.2" stroke-linecap="round"/>
+      <rect x="9" y="72" width="28" height="5" rx="2" fill="#6b4a2f"/>
+    </svg>
+    <div class="round-dots"><i class="on"></i><i></i><span>Round 1 of 2 complete</span></div>
+    ${total ? `<div class="big-score">${score} / ${total}</div><div class="stars" style="font-size:1.4rem">${stars(score, total)}</div>` : ''}
+    <p class="epigraph">${note || 'Half the night is gone. The rest still waits in the dark.'}</p>
+    <p class="small muted">${calm ? 'The narrator’s pulse slows a little while you rest. ' : ''}Your progress is saved. You can stop here and come back for Round 2 later.</p>
+    <div class="row"><button class="btn btn-primary" data-r2>Begin Round 2 →</button><button class="btn-link" data-later>Stop here for now</button></div>
+  </div>`;
+  Sound.chime();
+  $('[data-r2]', body).onclick = () => { Sound.click(); onContinue(); };
+  $('[data-later]', body).onclick = () => renderAct(STAGES[id].act);
+  $('[data-r2]', body).focus({preventScroll:true});
+}
+
+/* Generic sequence of questions, split into two rounds when there are four or more.
+   opts.pick draws a random subset; the drawn order is saved so Round 2 resumes exactly. */
+function runSequence(id, pool, opts = {}) {
+  const act = STAGES[id].act;
+  const body = frame(id);
+  const saved = S.roundProg[id];
+  let qs, i = 0, score = 0;
+  if (saved && saved.ids && saved.ids.every(x => pool.some(q => q.id === x))) {
+    qs = saved.ids.map(x => pool.find(q => q.id === x)); i = saved.i || 0; score = saved.score || 0;
+  } else {
+    qs = opts.pick ? shuffle(pool).slice(0, opts.pick) : pool;
+  }
+  const half = qs.length >= 4 ? Math.ceil(qs.length / 2) : qs.length;
+  const split = half < qs.length;
+  let breakShown = i > half, roundOneScore = saved && saved.r1 != null ? saved.r1 : null;
+  const persist = () => { S.roundProg[id] = {ids:qs.map(q => q.id), i, score, r1:roundOneScore}; save(); };
+  const step = () => {
+    if (i >= qs.length) return completeStage(id, score, qs.length, opts.endNote, qs.map(q => q.id));
+    if (split && i === half && !breakShown) {
+      breakShown = true;
+      if (roundOneScore == null) { roundOneScore = score; persist(); }
+      return intermission(id, {score:roundOneScore, total:half, note:opts.breakNote, onContinue:step});
+    }
+    const r2 = split && i >= half, k = r2 ? i - half : i, size = r2 ? qs.length - half : half;
+    setProgress(i, qs.length, split ? `Round ${r2 ? 2 : 1} of 2 · ${k + 1} of ${size}` : `${i + 1} of ${qs.length}`);
+    const host = document.createElement('div');
+    body.innerHTML = opts.top ? opts.top(i) : '';
+    body.appendChild(host);
+    mcq(host, qs[i], act, first => { if (first) score++; if (opts.after) opts.after(i, first); i++; persist(); step(); });
+  };
+  step();
+}
+
+/* ---------- ACT I ---------- */
+function runStudy(id) {
+  const seen = new Set(S.studySeen);
+  const rounds = [VOCAB.slice(0, 8), VOCAB.slice(8)];
+  const body = frame(id);
+  const showRound = r => {
+    const words = rounds[r], left = () => words.filter(w => !seen.has(w.w)).length;
+    body.innerHTML = `<div class="fade-in"><p class="muted" style="margin-bottom:14px">Tap each card to turn it over. The back shows the meaning and the exact line where Poe used the word.</p>
+      <div class="cards">${words.map(w => `<button class="vcard ${seen.has(w.w) ? 'seen' : ''}" data-w="${w.w}" aria-label="${w.w}, ${w.pos}. Turn over.">
+        <span class="vc-inner">
+          <span class="vc-face vc-front"><span class="w">${w.w}</span><span class="pos">${w.pos}</span></span>
+          <span class="vc-face vc-back"><span class="def">${w.def}</span><span class="q">“${w.quote}”</span><span class="ex">${w.ex}</span></span>
+        </span></button>`).join('')}</div>
+      <div class="row" style="margin-top:18px"><button class="btn btn-primary" id="studyDone">${r ? 'I’ve studied all the words →' : 'Finish Round 1 →'}</button><span class="small muted" id="studyLeft"></span></div></div>`;
+    const upd = () => {
+      const n = words.length - left();
+      setProgress(r * 8 + n, VOCAB.length, `Round ${r + 1} of 2 · ${n} of ${words.length} studied`);
+      $('#studyDone').disabled = left() > 0;
+      $('#studyLeft').textContent = left() ? `${left()} cards left to turn` : '';
+    };
+    upd();
+    $$('.vcard', body).forEach(c => c.onclick = () => {
+      c.classList.toggle('flipped'); Sound.click();
+      const w = c.dataset.w;
+      if (!seen.has(w)) { seen.add(w); c.classList.add('seen'); S.studySeen = [...seen]; save(); upd(); }
+    });
+    $('#studyDone').onclick = () => r === 0
+      ? intermission(id, {note:'Eight words learned. Eight more wait in the dark.', onContinue:() => showRound(1)})
+      : completeStage(id, null, null, 'You know his words now. Listen for them in the dark.');
+  };
+  showRound(rounds[0].every(w => seen.has(w.w)) ? 1 : 0);
+}
+
+function runLantern(id) {
+  const qs = VOCAB.map(w => {
+    const same = shuffle(VOCAB.filter(x => x.w !== w.w && x.pos === w.pos));
+    const other = shuffle(VOCAB.filter(x => x.w !== w.w && x.pos !== w.pos));
+    const distract = same.concat(other).slice(0, 3);
+    const cap = s => w.form[0] === w.form[0].toUpperCase() ? s[0].toUpperCase() + s.slice(1) : s;
+    return {
+      id:'lan-' + w.w, label:w.w, lantern:true, evidence:false, clueDef:w.def, cluePos:w.pos,
+      passage: w.blank.replace('___', '<span class="blank">?</span>'),
+      prompt:'Which word belongs in the blank?',
+      options:[{t:cap(w.form), why:`Yes. “${w.form}” means <strong>${w.def}</strong>. ${w.clue}`}]
+        .concat(distract.map(d => ({t:cap(d.form), why:`“${d.form}” means ${d.def}. That doesn’t fit here. Clue: ${w.clue}`}))),
+      answer:0,
+      onCorrect: host => {
+        const b = $('.lantern-passage', host); b.classList.add('lit');
+        const bl = $('.blank', b); if (bl) bl.textContent = w.form;
+        const lb = $('[data-light]', host); if (lb) lb.disabled = true;
+      }
+    };
+  });
+  runSequence(id, qs, {pick:10, breakNote:'The lantern burns low. Trim the wick and go on.', endNote:'The lantern is closed. Every word is in its place.'});
+}
+
+let matchTimer = null;
+function runMatch(id) {
+  const saved = S.roundProg[id];
+  const order = saved && saved.order ? saved.order.map(w => VOCAB.find(v => v.w === w)) : shuffle(VOCAB);
+  const rounds = [order.slice(0, 8), order.slice(8, 16)];
+  const body = frame(id);
+  let r = saved ? saved.r : 0, firstRight = saved ? saved.firstRight : 0;
+  const playRound = () => {
+    if (r >= rounds.length) { clearInterval(matchTimer); return completeStage(id, firstRight, VOCAB.length, 'The ticking in the wall has stopped… for now.', VOCAB.map(v => 'match-' + v.w)); }
+    const words = rounds[r], defs = shuffle(words), mistakes = {}, matched = new Set(), startRight = firstRight;
+    let sel = null, secs = 0;
+    setProgress(r, rounds.length, `Round ${r + 1} of 2`);
+    body.innerHTML = `<div class="fade-in">
+      <div class="match-top"><p class="muted">Tap a word, then its meaning. Wrong pairs make the heart race.</p>
+        <div class="beetle-timer ticking" aria-live="off">${icon('beetle')}<span id="secs">0:00</span></div></div>
+      <div class="match-grid">
+        <div class="match-col">${shuffle(words).map(w => `<button class="mitem word" data-w="${w.w}">${w.w}</button>`).join('')}</div>
+        <div class="match-col">${defs.map(w => `<button class="mitem def" data-d="${w.w}">${w.def}</button>`).join('')}</div>
+      </div></div>`;
+    clearInterval(matchTimer);
+    matchTimer = setInterval(() => {
+      if (!$('#secs')) return clearInterval(matchTimer);
+      if ($('.modal-back') || $('.confession') || document.visibilityState !== 'visible') return;
+      secs++; $('#secs').textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+      if (secs % 2 === 0) Sound.tick();
+    }, 1000);
+    const all = $$('.mitem', body);
+    all.forEach(b => b.onclick = () => {
+      if (b.classList.contains('matched')) return;
+      const side = b.dataset.w ? 'w' : 'd', key = b.dataset.w || b.dataset.d;
+      if (!sel || sel.side === side) { all.forEach(x => x.classList.remove('sel')); sel = {side, key, el:b}; b.classList.add('sel'); Sound.click(); return; }
+      const wKey = side === 'w' ? key : sel.key, dKey = side === 'd' ? key : sel.key;
+      if (wKey === dKey) {
+        [b, sel.el].forEach(x => { x.classList.remove('sel'); x.classList.add('matched'); x.disabled = true; });
+        matched.add(wKey);
+        const w = VOCAB.find(v => v.w === wKey), ok = !mistakes[wKey];
+        record('match-' + wKey, 'vocab', wKey, ok, b);
+        if (ok) { firstRight++; heartRight(); }
+        Sound.good();
+        sel = null;
+        if (matched.size === words.length) {
+          clearInterval(matchTimer);
+          if (secs <= 45) unlock('acute');
+          if (r === 0) {
+            S.roundProg[id] = {order:order.map(w => w.w), r:1, firstRight}; save();
+            setTimeout(() => intermission(id, {score:firstRight - startRight, total:words.length,
+              note:`Round 1 matched in ${secs} seconds. The beetle in the wall is still ticking…`, onContinue:() => { r = 1; playRound(); }}), 700);
+          } else {
+            body.insertAdjacentHTML('beforeend', `<div class="fb good fade-in" style="margin-top:16px"><div class="fb-title">Round 2 complete in ${secs} seconds.</div>
+              <div><button class="btn btn-primary" id="nextRound">Finish →</button></div></div>`);
+            $('#nextRound').onclick = () => { r++; playRound(); };
+            $('#nextRound').focus();
+          }
+        }
+      } else {
+        mistakes[wKey] = (mistakes[wKey] || 0) + 1;
+        [b, sel.el].forEach(x => { x.classList.remove('sel', 'nope'); void x.offsetWidth; x.classList.add('nope'); });
+        heartWrong(); Sound.bad(); sel = null;
+      }
+    });
+  };
+  playRound();
+}
+
+/* ---------- ACT II ---------- */
+function runTools(id) {
+  const seen = new Set(S.toolsSeen);
+  const rounds = [TOOLS.slice(0, 4), TOOLS.slice(4)];
+  const body = frame(id);
+  const showRound = r => {
+    const tools = rounds[r], left = () => tools.filter(t => !seen.has(t.name)).length;
+    body.innerHTML = `<div class="fade-in"><p class="muted" style="margin-bottom:14px">Poe builds suspense on purpose, with tools a writer can name. Open each one and read the example from the story.</p>
+      <div class="tools-grid">${tools.map(t => `<button class="tcard ${seen.has(t.name) ? 'seen' : ''}" data-n="${t.name}" aria-expanded="false">
+        <h3><span>${t.name}</span><span class="seen-dot"></span></h3>
+        <span class="tbody"><span>${t.def}</span><span class="ex">“${t.ex}”</span></span></button>`).join('')}</div>
+      <div class="row" style="margin-top:18px"><button class="btn btn-primary" id="toolsDone">${r ? 'I know my tools →' : 'Finish Round 1 →'}</button></div></div>`;
+    const upd = () => { const n = tools.length - left(); setProgress(r * 4 + n, TOOLS.length, `Round ${r + 1} of 2 · ${n} of ${tools.length} opened`); $('#toolsDone').disabled = left() > 0; };
+    upd();
+    $$('.tcard', body).forEach(c => c.onclick = () => {
+      const open = c.classList.toggle('open'); c.setAttribute('aria-expanded', open); Sound.click();
+      const n = c.dataset.n;
+      if (!seen.has(n)) { seen.add(n); c.classList.add('seen'); S.toolsSeen = [...seen]; save(); upd(); }
+    });
+    $('#toolsDone').onclick = () => r === 0
+      ? intermission(id, {note:'Four tools in hand. Four more lie on the workbench.', onContinue:() => showRound(1)})
+      : completeStage(id, null, null, 'Now listen for the clock. It is almost midnight.');
+  };
+  showRound(rounds[0].every(t => seen.has(t.name)) ? 1 : 0);
+}
+
+function clockSVG(n) {
+  const marks = Array.from({length:12}, (_, k) => {
+    const a = (k + 1) * 30 * Math.PI / 180;
+    const x1 = 60 + Math.sin(a) * 44, y1 = 60 - Math.cos(a) * 44, x2 = 60 + Math.sin(a) * 52, y2 = 60 - Math.cos(a) * 52;
+    return `<line class="mark ${k < n ? 'lit' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+  }).join('');
+  return `<svg class="clock" viewBox="0 0 120 120" aria-hidden="true"><circle class="face" cx="60" cy="60" r="56"/><circle cx="60" cy="60" r="56" fill="none" stroke="#3a2a20" stroke-width="4"/>${marks}
+    <line class="hand" x1="60" y1="60" x2="60" y2="22" style="transform:rotate(${n * 30}deg)"/><line x1="60" y1="60" x2="60" y2="38" stroke="#1a110d" stroke-width="4" stroke-linecap="round" style="transform:rotate(${n * 30 - 90}deg);transform-origin:60px 60px"/><circle cx="60" cy="60" r="4" fill="#1a110d"/></svg>`;
+}
+function runChimes(id) {
+  runSequence(id, CHIMES, {
+    top: i => `<div class="clock-wrap">${clockSVG(i)}<div class="clock-text"><strong>Stroke ${i + 1} of twelve</strong>Answer correctly and the clock moves toward midnight.</div></div>`,
+    after: () => Sound.chime(),
+    breakNote:'The clock has struck six. Six strokes remain before midnight.',
+    endNote:'The clock strikes twelve. “The old man’s hour had come!”'
+  });
+}
+
+function runDial(id) {
+  const body = frame(id);
+  let r = 0, score = 0;
+  const round = () => {
+    if (r >= DIAL.length) return completeStage(id, score, DIAL.length, 'You can feel the tension rise. That is pacing.', DIAL.map(d => d.id));
+    const d = DIAL[r], order = shuffle(d.items.map((t, i) => ({t, i})));
+    const pos = {}; let next = 1, checked = false;
+    setProgress(r, DIAL.length, `Round ${r + 1} of ${DIAL.length}`);
+    body.innerHTML = `<div class="fade-in"><p class="prompt">Tap the passages in order, from <strong>calmest</strong> (1) to <strong>most frantic</strong> (4).</p>
+      <div class="dial-scale"><span>calm</span><span>frantic</span></div>
+      <div class="dial-list">${order.map((o, k) => `<button class="dial-item" data-k="${k}"><span class="slot"></span><span>“${o.t}”</span></button>`).join('')}</div>
+      <div class="row" style="margin-top:14px"><button class="btn btn-primary" id="check" disabled>Check my order</button><button class="btn-link" id="clear">Clear</button></div>
+      <div class="feedback" aria-live="polite"></div></div>`;
+    const items = $$('.dial-item', body);
+    const paint = () => { items.forEach((b, k) => { const p = pos[k]; $('.slot', b).textContent = p || ''; b.classList.toggle('set', !!p); }); $('#check').disabled = Object.keys(pos).length < 4; };
+    items.forEach((b, k) => b.onclick = () => {
+      if (checked) return;
+      if (pos[k]) { const removed = pos[k]; delete pos[k]; Object.keys(pos).forEach(j => { if (pos[j] > removed) pos[j]--; }); next--; }
+      else if (next <= 4) { pos[k] = next++; }
+      Sound.click(); paint();
+    });
+    $('#clear').onclick = () => { if (checked) return; Object.keys(pos).forEach(k => delete pos[k]); next = 1; paint(); };
+    $('#check').onclick = () => {
+      checked = true;
+      const ok = order.every((o, k) => pos[k] === o.i + 1);
+      record(d.id, 'suspense', d.label, ok, $('#check'));
+      items.forEach((b, k) => { b.classList.add(pos[k] === order[k].i + 1 ? 'ok' : 'no'); $('.slot', b).textContent = order[k].i + 1; b.disabled = true; });
+      if (ok) { score++; heartRight(); Sound.good(); } else { heartWrong(); Sound.bad(); }
+      $('.feedback', body).innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-title">${ok ? 'Perfectly paced.' : 'Here is the true order.'}</div><div>${d.why}</div>
+        <div><button class="btn btn-primary" id="nextDial">Continue →</button></div></div>`;
+      $('#check').disabled = true;
+      $('#nextDial').onclick = () => { r++; round(); };
+      $('#nextDial').focus();
+    };
+  };
+  round();
+}
+
+function runRewrite(id) {
+  const qs = REWRITE.map(q => ({...q, evidence:false,
+    passage:`<span class="small" style="font-family:var(--font-type);font-style:normal;color:var(--ash)">PLAIN VERSION</span><br>“${q.plain}”`,
+    prompt:'Which rewrite builds more suspense, the way Poe would?'}));
+  runSequence(id, qs, {breakNote:'Your pen is steady. Dip it in the ink again.', endNote:'You write like a man who hears all things in the heaven and in the earth.'});
+}
+
+/* ---------- ACT III ---------- */
+function runSymIntro(id) {
+  const body = frame(id, '', 'Read first');
+  body.innerHTML = `<div class="fade-in" style="display:grid;gap:16px">
+    <p>A <strong>symbol</strong> is an object, person, or image that stands for an idea bigger than itself. Detectives of literature read every symbol on three levels:</p>
+    <div class="tools-grid">
+      <div class="tcard open"><h3>1 · Literal</h3><span class="tbody" style="display:grid">What is the object, really, in the story?</span></div>
+      <div class="tcard open"><h3>2 · Symbolic</h3><span class="tbody" style="display:grid">What bigger idea does it stand for, such as guilt, fear, death, or secrecy?</span></div>
+      <div class="tcard open"><h3>3 · Proof</h3><span class="tbody" style="display:grid">Which quote from the story supports your reading?</span></div>
+    </div>
+    <p class="muted">Clue: symbols tend to come back at important moments. In this story, watch for the eye, the heartbeat, and the floorboards.</p>
+    <div><button class="btn btn-primary" id="go">Try two warm-up questions →</button></div></div>`;
+  $('#go').onclick = () => runSequence(id, SYM_INTRO.map(q => ({...q, evidence:false})), {endNote:'Now, take up the planks.'});
+}
+
+const plankLabel = c => `${SYMBOLS.find(s => s.id === c.s).name}: “${c.q.split(/\s+/).slice(0, 6).join(' ')}…”`;
+function runPlanks(id) {
+  const body = frame(id);
+  const saved = S.roundProg[id];
+  const clues = saved && saved.ids ? saved.ids.map(x => PLANKS.find(p => p.id === x)) : shuffle(PLANKS);
+  const solved = {}, missed = {};
+  let score = saved ? saved.score : 0, active = null;
+  if (saved) { (saved.solved || []).forEach(x => solved[x] = true); (saved.missed || []).forEach(x => missed[x] = true); }
+  const persist = () => { S.roundProg[id] = {ids:clues.map(c => c.id), solved:Object.keys(solved), missed:Object.keys(missed), score}; save(); };
+  const PER = 6;
+  let round = clues.slice(0, PER).every(c => solved[c.id]) ? 1 : 0, justSolved = null;
+  const counts = s => ({have: clues.filter(c => c.s === s && solved[c.id]).length, total: clues.filter(c => c.s === s).length});
+  const draw = () => {
+    const set = clues.slice(round * PER, round * PER + PER);
+    const n = set.filter(c => solved[c.id]).length;
+    setProgress(round * PER + n, clues.length, `Round ${round + 1} of 2 · ${n} of ${PER} clues`);
+    body.innerHTML = `<div class="fade-in">
+      <p class="muted" style="margin-bottom:12px">Something is hidden under every plank. Pry one up, read the clue, and decide which symbol it belongs to. Listen: the floor is beating.</p>
+      <div class="sym-tray">${SYMBOLS.map(s => { const c = counts(s.id); return `<div class="sym-slot ${c.have === c.total ? 'full' : ''}">${icon(s.icon)}<span>${s.name}</span><b>${c.have}/${c.total}</b></div>`; }).join('')}</div>
+      <div class="floor">${clues.map((c, i) => { const sym = SYMBOLS.find(s => s.id === c.s);
+        if (i < round * PER || i >= round * PER + PER) return '';
+        return solved[c.id]
+          ? `<button class="plank solved ${c.id === justSolved ? 'just' : ''}" disabled aria-label="Plank ${i + 1}, solved: ${sym.name}"><span class="plank-label">${icon(sym.icon)} ${sym.name.replace('The ', '')}</span></button>`
+          : `<button class="plank ${active === i ? 'active' : ''}" data-i="${i}" aria-label="Pry up plank ${i + 1}"><span class="nail l"></span><span class="nail r"></span><span class="plank-label">Plank ${i + 1}</span></button>`; }).join('')}</div>
+      <div class="clue-panel" id="cp"></div></div>`;
+    $$('.plank[data-i]', body).forEach(p => p.onclick = () => { active = +p.dataset.i; Sound.creak(); draw(); openClue(); });
+    if (n === PER && round === 0) {
+      const r1 = set.filter(c => !missed[c.id]).length;
+      $('#cp').innerHTML = `<div class="fb good"><div class="fb-title">Six planks are up.</div><div>Six more are still nailed down.</div><div><button class="btn btn-primary" id="fin">Finish Round 1 →</button></div></div>`;
+      $('#fin').onclick = () => intermission(id, {score:r1, total:PER, note:'Six planks are up. Something still beats beneath the other six.', onContinue:() => { round = 1; active = null; draw(); }});
+    } else if (n === PER) {
+      $('#cp').innerHTML = `<div class="fb good"><div class="fb-title">Every plank is up.</div><div>No human eye could have found all of that. You did.</div><div><button class="btn btn-primary" id="fin">Finish →</button></div></div>`;
+      $('#fin').onclick = () => completeStage(id, score, clues.length, '“…tear up the planks! here, here!”', clues.map(c => c.id));
+    }
+  };
+  const openClue = () => {
+    const c = clues[active], cp = $('#cp');
+    cp.innerHTML = `<div class="fade-in"><blockquote class="passage">“${c.q}”</blockquote><p class="prompt">Which symbol is this clue about?</p>
+      <div class="sym-choices">${SYMBOLS.map(s => `<button class="sym-choice" data-s="${s.id}">${icon(s.icon)}<span>${s.name}</span></button>`).join('')}</div>
+      <div class="feedback" aria-live="polite"></div></div>`;
+    cp.scrollIntoView({behavior:'smooth', block:'nearest'});
+    $$('.sym-choice', cp).forEach(b => b.onclick = () => {
+      if (b.dataset.s === c.s) {
+        const ok = !missed[c.id];
+        record(c.id, 'symbols', plankLabel(c), ok, b);
+        if (ok) { score++; heartRight(); }
+        solved[c.id] = true; justSolved = c.id; persist(); Sound.good();
+        fileEvidence(c.id, c.q, SYMBOLS.find(s => s.id === c.s).name);
+        active = null; draw();
+        $('#cp').insertAdjacentHTML('afterbegin', `<div class="fb good fade-in" style="margin-bottom:12px"><div class="fb-title">${SYMBOLS.find(s => s.id === c.s).name}</div><div>${c.why}</div></div>`);
+      } else {
+        if (!missed[c.id]) { missed[c.id] = true; persist(); record(c.id, 'symbols', plankLabel(c), false); }
+        b.classList.add('wrong'); b.disabled = true; heartWrong(); Sound.bad();
+        $('.feedback', cp).innerHTML = `<div class="fb bad"><div class="fb-title">Look again.</div><div>This clue isn’t about ${SYMBOLS.find(s => s.id === b.dataset.s).name.replace(/^The /, 'the ')}. Which object does the line actually describe? Find the key noun.</div></div>`;
+      }
+    });
+  };
+  draw();
+}
+
+function runDeep(id) {
+  const secs = {eye:['eye','The Vulture Eye','“He had the eye of a vulture.”'], heart:['heart','The Heartbeat','“It is the beating of his hideous heart!”'], floor:['planks','The Floorboards','“I then took up three planks…”']};
+  let last = null;
+  const qs = DEEP.map(q => {
+    const s = secs[q.sec], first = q.sec !== last; last = q.sec;
+    return {...q, banner: first ? `<div class="section-banner"><span class="ico">${icon(s[0])}</span><div><span class="kicker">Symbol</span><h3>${s[1]}</h3><span class="small muted">${s[2]}</span></div></div>` : `<div class="section-banner" style="border:0;padding:0;margin-bottom:10px"><span class="ico" style="width:26px;height:26px">${icon(s[0])}</span><span class="kicker">${s[1]}</span></div>`};
+  });
+  runSequence(id, qs, {breakNote:'The eye has been examined, and the heart is beating beneath you. Listen closely before you go on.', endNote:'The eye that judges. The heart that tells. The floor that cannot hold the truth.'});
+}
+
+/* ---------- FINALE ---------- */
+function runFinale() {
+  cur.screen = 'stage'; setAct('finale');
+  if (S.caseFile) return showCaseFile(false);
+  const draft = S.caseDraft || {verdict:null, picks:[], claim:''};
+  const pool = S.evidence.length >= 3 ? S.evidence : S.evidence.concat(CHIMES.filter(c => !S.evidence.some(e => e.id === c.id)).map(c => ({id:c.id, quote:c.passage, label:c.label})));
+  const body = frame('f-case');
+  let step = draft.verdict ? (draft.picks.length === 3 ? 3 : 2) : 1;
+  const persist = () => { S.caseDraft = draft; save(); };
+  const draw = () => {
+    setProgress(step - 1, 3, `Step ${step} of 3`);
+    if (step === 1) {
+      body.innerHTML = `<div class="fade-in"><p class="prompt">Step 1 · Your verdict. Can the narrator be trusted?</p>
+        <div class="choice-list">${VERDICTS.map(v => `<button class="choice" data-v="${v.id}" aria-pressed="${draft.verdict === v.id}"><span class="box">${draft.verdict === v.id ? '✓' : ''}</span><span>${v.t}</span></button>`).join('')}</div>
+        <div class="feedback" id="vnote"></div>
+        <div class="row" style="margin-top:16px"><button class="btn btn-primary" id="toEv" ${draft.verdict ? '' : 'disabled'}>Choose my evidence →</button></div></div>`;
+      $$('[data-v]', body).forEach(b => b.onclick = () => { draft.verdict = b.dataset.v; persist(); Sound.click(); draw();
+        if (draft.verdict === 'reliable') $('#vnote').innerHTML = '<div class="fb bad"><div class="fb-title">A bold position.</div><div>Most readers disagree, so your evidence will need to work hard. You may keep this verdict if you can defend it.</div></div>'; });
+      $('#toEv').onclick = () => { step = 2; draw(); };
+    } else if (step === 2) {
+      body.innerHTML = `<div class="fade-in"><p class="prompt">Step 2 · Choose your <strong>three strongest</strong> pieces of evidence.</p>
+        <p class="small muted" style="margin-bottom:12px">These come from your Evidence Locker: passages you analyzed correctly.</p>
+        <div class="choice-list">${pool.map(e => { const on = draft.picks.includes(e.id); return `<button class="choice" data-e="${e.id}" aria-pressed="${on}"><span class="box">${on ? '✓' : ''}</span><span><span class="q">“${esc(e.quote)}”</span><span class="tag">${esc(e.label)}</span></span></button>`; }).join('')}</div>
+        <div class="row" style="margin-top:16px;position:sticky;bottom:12px"><button class="btn" id="backV">← Verdict</button><button class="btn btn-primary" id="toClaim" ${draft.picks.length === 3 ? '' : 'disabled'}>Write my claim (${draft.picks.length}/3) →</button></div></div>`;
+      $$('[data-e]', body).forEach(b => b.onclick = () => {
+        const id = b.dataset.e, k = draft.picks.indexOf(id);
+        if (k >= 0) draft.picks.splice(k, 1); else if (draft.picks.length < 3) draft.picks.push(id); else { toast('You already chose three. Remove one first.', 'scroll'); return; }
+        persist(); Sound.click(); const y = window.scrollY; draw(); window.scrollTo({top:y});
+      });
+      $('#backV').onclick = () => { step = 1; draw(); };
+      $('#toClaim').onclick = () => { step = 3; draw(); };
+    } else {
+      const v = VERDICTS.find(x => x.id === draft.verdict);
+      const picks = draft.picks.map(id => pool.find(e => e.id === id)).filter(Boolean);
+      body.innerHTML = `<div class="fade-in" style="display:grid;gap:14px"><p class="prompt" style="margin:0">Step 3 · Write your claim.</p>
+        <p class="small muted">Your verdict: <strong>${v.t}</strong></p>
+        <div>${picks.map(e => `<blockquote class="passage" style="margin-bottom:8px;font-size:1rem">“${esc(e.quote)}”</blockquote>`).join('')}</div>
+        <p class="small muted">Use this frame if it helps: <em>The narrator is ____ because ____. For example, when he says “____,” this shows ____. The [eye / heartbeat / floorboards] also suggests ____.</em></p>
+        <label class="sr" for="claim">Your claim</label>
+        <textarea class="claim" id="claim" placeholder="The narrator is…">${esc(draft.claim)}</textarea>
+        <div class="row"><span class="small muted" id="wc"></span></div>
+        <div class="row"><button class="btn" id="backE">← Evidence</button><button class="btn btn-primary" id="seal" disabled>Seal the Case File</button></div></div>`;
+      const ta = $('#claim'), wc = $('#wc'), sealBtn = $('#seal');
+      const upd = () => { const n = wordCount(ta.value); wc.textContent = n < 25 ? `${n} words. Write at least 25 to seal the case.` : `${n} words. Ready to seal.`; sealBtn.disabled = n < 25; draft.claim = ta.value; persist(); };
+      ta.oninput = upd; upd();
+      $('#backE').onclick = () => { step = 2; draw(); };
+      sealBtn.onclick = () => {
+        S.caseFile = {verdict:draft.verdict, evidence:picks.map(e => ({quote:e.quote, label:e.label})), claim:draft.claim.trim(), at:Date.now()};
+        S.time.finale = S.time.finale || 0;
+        save(); completeStage('f-case', null, null); unlock('closed'); Sound.chime();
+        showCaseFile(false);
+      };
+    }
+  };
+  draw();
+}
+
+function caseFileHtml() {
+  const c = S.caseFile; if (!c) return '';
+  const v = VERDICTS.find(x => x.id === c.verdict);
+  const acc = ['vocab','suspense','symbols'].map(a => { const r = actAccuracy(a); return `<div><div class="cf-label">Act ${ACTS[a].num} · ${ACTS[a].sub}</div><div>${r.total ? r.pct + '% first try' : '—'}</div></div>`; }).join('');
+  return `<article class="casefile">
+    <div class="stamp">CASE CLOSED</div>
+    <div class="cf-label">Case No. 1843 · Officer’s report</div>
+    <h2>The Tell-Tale Heart</h2>
+    <div class="cf-grid">
+      <div><div class="cf-label">Officer</div><div>${esc(S.name)}</div></div>
+      <div><div class="cf-label">Sealed</div><div>${fmtDate(c.at)}</div></div>
+      ${acc}
+    </div>
+    <div class="cf-label">Verdict</div><p style="font-size:1.1rem;margin:4px 0 16px">${esc(v ? v.t : '')}</p>
+    <div class="cf-label">Evidence</div>${c.evidence.map(e => `<div class="cf-ev">“${esc(e.quote)}”<div class="cf-label" style="font-style:normal">${esc(e.label)}</div></div>`).join('')}
+    <div class="cf-label" style="margin-top:16px">Claim</div><p class="cf-claim">${esc(c.claim)}</p>
+  </article>`;
+}
+function showCaseFile(fromHub) {
+  const body = frame('f-case', '', 'Sealed');
+  setProgress(1, 1, 'Sealed');
+  body.innerHTML = `<div class="fade-in" style="display:grid;gap:16px">${caseFileHtml()}
+    <div class="row">
+      ${inFrame ? '' : '<button class="btn btn-primary" id="printCase">Print case file</button>'}
+      <button class="btn" id="rewrite">Reopen and revise</button>
+      <button class="btn-link" id="home">Return to the house</button>
+    </div>
+    ${inFrame ? '' : '<p class="small muted">To hand it in digitally, choose “Save as PDF” in the print window.</p>'}</div>`;
+  const pb = $('#printCase'); if (pb) pb.onclick = () => printHtml(caseFileHtml());
+  $('#rewrite').onclick = () => { S.caseDraft = {verdict:S.caseFile.verdict, picks:S.caseDraft && S.caseDraft.picks ? S.caseDraft.picks : [], claim:S.caseFile.claim}; S.caseFile = null; save(); runFinale(); };
+  $('#home').onclick = renderHub;
+}
+function printHtml(html) {
+  const pr = $('#print-root');
+  pr.innerHTML = `<div style="font-family:Georgia,serif;color:#000;padding:24px">${html}</div>`;
+  window.print();
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+let modalReturn = null;
+function modal(title, html, cls = '') {
+  const opener = document.activeElement;
+  closeModal();
+  modalReturn = opener;
+  const back = document.createElement('div'); back.className = 'modal-back';
+  back.innerHTML = `<div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="modal-head"><h2>${title}</h2><button class="x" aria-label="Close">×</button></div><div class="modal-body">${html}</div></div>`;
+  document.body.appendChild(back);
+  back.addEventListener('click', e => { if (e.target === back) closeModal(); });
+  $('.x', back).onclick = closeModal;
+  $('.x', back).focus();
+  return $('.modal-body', back);
+}
+function closeModal() {
+  const m = $('.modal-back'); if (!m) return;
+  m.remove();
+  if (modalReturn && modalReturn.isConnected) modalReturn.focus({preventScroll:true});
+  modalReturn = null;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function openNotebook() {
+  modal('The Detective’s Notebook', `
+    <h3 style="margin-bottom:8px">Tools of suspense</h3>
+    <div class="list-gap">${TOOLS.map(t => `<div><strong>${t.name}.</strong> ${t.def} <em class="muted">“${t.ex}”</em></div>`).join('')}</div>
+    <h3 style="margin:22px 0 8px">Reading a symbol</h3>
+    <p><strong>Literal</strong> (what is it?) → <strong>Symbolic</strong> (what bigger idea does it stand for?) → <strong>Proof</strong> (which quote shows it?)</p>
+    <h3 style="margin:22px 0 8px">Tone vs. mood</h3>
+    <p><strong>Tone</strong> is the narrator’s attitude: smug, defensive, frantic. <strong>Mood</strong> is what the reader feels: dread, tension, horror.</p>
+    <h3 style="margin:22px 0 8px">Word list</h3>
+    <div class="list-gap">${VOCAB.map(w => `<div><strong>${w.w}</strong> <span class="muted small">(${w.pos})</span>: ${w.def}</div>`).join('')}</div>`);
+}
+function openEvidence() {
+  modal('Evidence Locker', S.evidence.length
+    ? `<p class="muted" style="margin-bottom:12px">${S.evidence.length} passages filed. You’ll choose your strongest three when you build your case.</p><div class="list-gap">${S.evidence.map(e => `<div class="passage" style="margin:0;font-size:1rem">“${esc(e.quote)}”<div class="kicker" style="margin-top:6px;font-style:normal">${esc(e.label)}</div></div>`).join('')}</div>`
+    : '<p class="muted">Empty. Answer questions about Poe’s passages correctly and they will be filed here as evidence.</p>');
+}
+function openAwards() {
+  modal('Awards', `<div class="list-gap">${Object.entries(ACHIEVEMENTS).map(([id, a]) => { const got = S.achievements.includes(id);
+    return `<div class="award ${got ? 'got' : ''}">${icon('trophy')}<div><h3>${a.name}</h3><span class="small muted">${got ? 'Earned. ' : ''}${a.desc}</span></div></div>`; }).join('')}</div>`);
+}
+function openShop() {
+  const body = modal('The Old Man’s Chest', '');
+  const draw = () => {
+    body.innerHTML = `<p class="muted" style="margin-bottom:6px">“For his gold I had no desire.” You may feel differently.</p>
+      <p style="margin-bottom:14px;font-family:var(--font-type);color:var(--lantern)">You have ${S.gold} gold · Lantern oil: ${S.items.oil} · Calming tea: ${S.items.tea}</p>
+      <div class="shop-grid">${SHOP.map(it => {
+        const owned = S.owned.includes(it.id);
+        const equipped = (it.type === 'skin' && S.skin === it.skin) || (it.type === 'companion' && S.companion === it.comp) || (it.type === 'cursor' && S.cursor);
+        let btn;
+        if (it.type === 'use') btn = `<button class="btn btn-primary" data-buy="${it.id}" ${S.gold < it.cost ? 'disabled' : ''}>Buy · ${it.cost}</button>` + (it.id === 'tea' && S.items.tea ? `<button class="btn" data-use="tea">Drink tea now</button>` : '');
+        else if (!owned) btn = `<button class="btn btn-primary" data-buy="${it.id}" ${S.gold < it.cost ? 'disabled' : ''}>Buy · ${it.cost}</button>`;
+        else btn = `<button class="btn" data-equip="${it.id}">${equipped ? 'Take off' : 'Use'}</button>`;
+        return `<div class="item">${it.sw ? `<div class="swatch" style="background:${it.sw}"></div>` : ''}<h3>${it.name}</h3><p class="small muted">${it.desc}</p>${owned && it.type !== 'use' ? '<span class="price">Owned</span>' : `<span class="price">${it.cost} gold</span>`}${btn}</div>`;
+      }).join('')}</div>
+      <div class="row" style="margin-top:16px">${S.skin !== 'midnight' ? '<button class="btn-link" data-default>Back to the Midnight Chamber colors</button>' : ''}</div>`;
+    $$('[data-buy]', body).forEach(b => b.onclick = () => {
+      const it = SHOP.find(x => x.id === b.dataset.buy); if (S.gold < it.cost) return;
+      S.gold -= it.cost;
+      if (it.type === 'use') S.items[it.id]++; else { S.owned.push(it.id); equip(it, true); }
+      S.purchases = (S.purchases || 0) + 1; if (S.purchases >= 3) unlock('gold');
+      save(); updateHud(); Sound.coin(); draw();
+    });
+    $$('[data-equip]', body).forEach(b => b.onclick = () => { const it = SHOP.find(x => x.id === b.dataset.equip); equip(it); save(); updateHud(); Sound.click(); draw(); });
+    const tea = $('[data-use]', body); if (tea) tea.onclick = () => { S.items.tea--; save(); setBpm(S.bpm - 30); toast('The tea is warm. The pounding slows.', 'heart'); draw(); };
+    const def = $('[data-default]', body); if (def) def.onclick = () => { S.skin = 'midnight'; save(); updateHud(); draw(); };
+  };
+  draw();
+}
+function equip(it, force) {
+  if (it.type === 'skin') S.skin = (S.skin === it.skin && !force) ? 'midnight' : it.skin;
+  if (it.type === 'companion') S.companion = (S.companion === it.comp && !force) ? null : it.comp;
+  if (it.type === 'cursor') S.cursor = force ? true : !S.cursor;
+}
+function renderCompanion() {
+  const c = $('#companion');
+  if (!S.companion) { c.hidden = true; c.innerHTML = ''; c.className = 'companion'; return; }
+  c.hidden = false; c.className = 'companion ' + S.companion;
+  c.innerHTML = {
+    raven:'<svg viewBox="0 0 80 80"><path d="M14 58c8-2 14-8 18-16 3-7 8-14 18-15 6 0 10 3 12 7l9 3-9 3c-1 9-7 17-17 21l4 11h-4l-4-9-4 1 2 9h-4l-3-9c-7 1-13 0-18-6z" fill="#0b0b0e"/><circle cx="55" cy="33" r="2.2" fill="#c9dbe2"/></svg>',
+    cat:'<svg viewBox="0 0 80 80"><path class="tail" d="M60 62c10-2 14-12 10-22" fill="none" stroke="#0b0b0e" stroke-width="5" stroke-linecap="round"/><ellipse cx="42" cy="58" rx="20" ry="14" fill="#0b0b0e"/><circle cx="34" cy="36" r="13" fill="#0b0b0e"/><path d="M23 30l1-13 9 9zM45 30l-1-13-9 9z" fill="#0b0b0e"/><ellipse cx="29" cy="35" rx="2.4" ry="3.2" fill="#e8c34a"/><ellipse cx="39" cy="35" rx="2.4" ry="3.2" fill="#e8c34a"/></svg>',
+    beetle:'<svg viewBox="0 0 24 24" style="color:#2a1a10">' + ICONS.beetle.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg>'
+  }[S.companion];
+}
+window.addEventListener('pointermove', e => {
+  if (S.cursor) { document.documentElement.style.setProperty('--mx', e.clientX + 'px'); document.documentElement.style.setProperty('--my', e.clientY + 'px'); }
+  $$('.evil-eye .iris').forEach(ir => {
+    const svg = ir.ownerSVGElement, r = svg.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1;
+    const k = Math.min(1, d / 400);
+    ir.style.transform = `translate(${(dx / d * 34 * k).toFixed(1)}px, ${(dy / d * 18 * k).toFixed(1)}px)`;
+  });
+});
+
+/* =========================================================
+   TEACHER REPORT
+   ========================================================= */
+function actAccuracy(act) {
+  const rs = Object.values(S.results).filter(r => r.act === act);
+  const right = rs.filter(r => r.first).length;
+  return {right, total:rs.length, pct: rs.length ? Math.round(right / rs.length * 100) : 0};
+}
+function missedList(act) {
+  return [...new Set(Object.values(S.results).filter(r => r.act === act && r.first === false).map(r => r.label))];
+}
+function chip(pct, total) {
+  if (!total) return '<span class="chip none">Not started</span>';
+  return `<span class="chip ${pct >= 80 ? 'ok' : pct >= 60 ? 'mid' : 'low'}">${pct >= 80 ? 'Strong' : pct >= 60 ? 'Developing' : 'Needs support'}</span>`;
+}
+function reportHtml() {
+  const done = ALL_STAGES.filter(stageDone).length, totalTime = Object.values(S.time).reduce((a, b) => a + b, 0);
+  const all = Object.values(S.results), right = all.filter(r => r.first).length;
+  const rows = ['vocab','suspense','symbols'].map(a => {
+    const p = actProgress(a), acc = actAccuracy(a), miss = missedList(a);
+    return `<tr><td><strong>Act ${ACTS[a].num}</strong><br>${ACTS[a].sub}</td><td class="num">${p.done}/${p.total}</td>
+      <td class="num">${acc.total ? `${acc.pct}% <span style="color:#6a5a48">(${acc.right}/${acc.total})</span>` : '—'}<br>${chip(acc.pct, acc.total)}</td>
+      <td class="num">${fmtTime(S.time[a])}</td>
+      <td>${miss.length ? miss.map(esc).join(', ') : (acc.total ? '<span style="color:#2f6b28">Nothing missed</span>' : '—')}</td></tr>`;
+  }).join('');
+  const stageRows = ALL_STAGES.map(id => { const s = S.stages[id], st = STAGES[id];
+    return `<tr><td>Act ${ACTS[st.act].num}</td><td>${st.name}</td><td>${s && s.done ? '✓ Done' : inProgress(id) ? 'In progress' : 'Not yet'}</td><td class="num">${s && s.done && s.total ? `${s.last}/${s.total} last · ${s.best}/${s.total} best` : (s && s.done ? '—' : '')}</td><td class="num">${s && s.plays ? s.plays : ''}</td></tr>`; }).join('');
+  const c = S.caseFile, v = c && VERDICTS.find(x => x.id === c.verdict);
+  return `<p class="kicker">Student progress · ${canSave ? 'saved in this browser' : 'NOT being saved: this browser blocks storage'}</p>
+    <h3 style="font-size:1.8rem;margin-top:4px">${esc(S.name || 'No name entered yet')}</h3>
+    <div class="tr-sum">
+      <div class="tr-stat"><div class="n">${Math.round(done / ALL_STAGES.length * 100)}%</div><div class="l">Complete (${done}/${ALL_STAGES.length} stages)</div></div>
+      <div class="tr-stat"><div class="n">${all.length ? Math.round(right / all.length * 100) + '%' : '—'}</div><div class="l">First-try accuracy</div></div>
+      <div class="tr-stat"><div class="n">${fmtTime(totalTime)}</div><div class="l">Active time</div></div>
+      <div class="tr-stat"><div class="n">${S.caseFile ? 'Sealed' : 'Not yet'}</div><div class="l">Final case file</div></div>
+    </div>
+    <p class="small muted">Started ${fmtDate(S.created)} · Last active ${fmtDate(S.lastActive)} · Heart “confessions” (many wrong answers in a row): ${S.confessions} · Lantern oil used: ${S.hintsUsed} · Vocabulary definition clues used: ${S.cluesUsed || 0} · Longest streak: ${S.bestStreak}</p>
+    <div class="tr-sec"><h3>By act</h3><div class="tr-table-wrap"><table class="tr-table">
+      <thead><tr><th>Act</th><th>Stages</th><th>First-try accuracy</th><th>Time</th><th>Missed on first try (review these)</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    <div class="tr-sec"><h3>Every stage</h3><div class="tr-table-wrap"><table class="tr-table">
+      <thead><tr><th>Act</th><th>Stage</th><th>Status</th><th>Score</th><th>Plays</th></tr></thead><tbody>${stageRows}</tbody></table></div></div>
+    <div class="tr-sec"><h3>Final case file</h3>
+      ${c ? `<p><strong>Verdict:</strong> ${esc(v ? v.t : '')}</p><p style="margin-top:6px"><strong>Evidence chosen:</strong></p><ul style="margin:4px 0 8px 18px;padding:0">${c.evidence.map(e => `<li><em>“${esc(e.quote)}”</em> (${esc(e.label)})</li>`).join('')}</ul><p><strong>Written claim (${wordCount(c.claim)} words):</strong></p><p style="white-space:pre-wrap;font-family:var(--font-type);font-size:.95rem;margin-top:4px">${esc(c.claim)}</p>`
+        : `<p class="muted">Not written yet.${S.caseDraft && S.caseDraft.claim ? ` A draft has been started (${wordCount(S.caseDraft.claim)} words).` : ''}</p>`}</div>`;
+}
+function reportText() {
+  const lines = [`THE TELL-TALE HEART · Student progress`, `Student: ${S.name || '(no name)'}`, `Last active: ${fmtDate(S.lastActive)}`,
+    `Stages complete: ${ALL_STAGES.filter(stageDone).length}/${ALL_STAGES.length}`, `Active time: ${fmtTime(Object.values(S.time).reduce((a, b) => a + b, 0))}`, ''];
+  ['vocab','suspense','symbols'].forEach(a => { const acc = actAccuracy(a), p = actProgress(a), miss = missedList(a);
+    lines.push(`Act ${ACTS[a].num} (${ACTS[a].sub}): ${p.done}/${p.total} stages, ${acc.total ? acc.pct + '% first-try (' + acc.right + '/' + acc.total + ')' : 'not started'}${miss.length ? '. Review: ' + miss.join(', ') : ''}`); });
+  lines.push('');
+  if (S.caseFile) { const v = VERDICTS.find(x => x.id === S.caseFile.verdict); lines.push(`Verdict: ${v ? v.t : ''}`, 'Evidence:', ...S.caseFile.evidence.map(e => `  "${e.quote}"`), 'Claim:', S.caseFile.claim); }
+  else lines.push('Final case file: not written yet');
+  return lines.join('\n');
+}
+function openTeacher() {
+  const body = modal('Teacher View', '', 'paper');
+  body.innerHTML = reportHtml() + `<div class="tr-actions">
+      <button class="btn" id="copyRep">Copy summary</button>
+      ${inFrame ? '' : '<button class="btn" id="printRep">Print or save as PDF</button>'}
+      <button class="btn danger" id="resetRep">Reset this student…</button>
+    </div>
+    <textarea class="tr-copy" id="repText" readonly hidden></textarea>
+    <p class="small muted" style="margin-top:12px">Progress is stored in this browser on this device. On a shared computer, use “Reset this student” before the next student begins. For a quick check, ask students to open this Teacher View and show you the screen, or copy the summary into your gradebook or LMS.</p>`;
+  $('#copyRep').onclick = async e => {
+    const txt = reportText(), btn = e.currentTarget;
+    try { await navigator.clipboard.writeText(txt); btn.textContent = 'Copied'; }
+    catch (err) { const ta = $('#repText'); ta.hidden = false; ta.value = txt; ta.focus(); ta.select(); btn.textContent = 'Select all and copy below'; }
+  };
+  const pr = $('#printRep'); if (pr) pr.onclick = () => printHtml(`<div style="color:#000">${reportHtml()}</div>`);
+  let armed = false, t;
+  $('#resetRep').onclick = e => {
+    const b = e.currentTarget;
+    if (!armed) { armed = true; b.textContent = 'Click again to erase all progress'; clearTimeout(t); t = setTimeout(() => { armed = false; b.textContent = 'Reset this student…'; }, 4000); return; }
+    try { localStorage.removeItem(KEY); } catch (err) {}
+    S = fresh(); save(); closeModal(); updateHud(); renderTitle(); toast('Progress erased. Ready for the next student.', 'clipboard');
+  };
+}
+
+/* =========================================================
+   WIRING
+   ========================================================= */
+$('#heartIco').innerHTML = icon('heart');
+$('#goldIco').innerHTML = icon('coin');
+const tileHtml = (ico, label) => `<span class="ico">${icon(ico)}</span><span class="tl">${label}</span>`;
+$('#homeBtn').innerHTML = tileHtml('home', 'Home');
+$('#notebookBtn').innerHTML = tileHtml('book', 'Notebook');
+$('#evidenceBtn').innerHTML = tileHtml('scroll', 'Evidence');
+$('#shopBtn').innerHTML = tileHtml('chest', 'Shop');
+$('#awardsBtn').innerHTML = tileHtml('trophy', 'Awards');
+$('#teacherBtn').innerHTML = tileHtml('clipboard', 'Teacher');
+$('#homeBtn').onclick = () => { closeModal(); clearInterval(matchTimer); S.name ? renderHub() : renderTitle(); };
+$('#notebookBtn').onclick = openNotebook;
+$('#evidenceBtn').onclick = openEvidence;
+$('#shopBtn').onclick = openShop;
+$('#awardsBtn').onclick = openAwards;
+$('#teacherBtn').onclick = openTeacher;
+$('#soundBtn').onclick = () => {
+  S.sound = {on:'quiet', quiet:'off', off:'on'}[S.sound] || 'on'; save(); updateHud();
+  Sound.ambience(false); if (S.sound !== 'off' && inHouse) { Sound.unlock(); Sound.ambience(true); }
+  toast({on:'Sound on, with heartbeat.', quiet:'Sound on, heartbeat off.', off:'All sound muted.'}[S.sound], S.sound === 'off' ? 'mute' : 'sound');
+};
+
+// Active time: counts only while this tab is visible and the student has interacted in the last 90 seconds.
+let lastInput = Date.now();
+['pointerdown','keydown','scroll'].forEach(ev => window.addEventListener(ev, () => { lastInput = Date.now(); }, {passive:true}));
+setInterval(() => {
+  if (!cur.act || document.visibilityState !== 'visible' || Date.now() - lastInput > 90000) return;
+  S.time[cur.act] = (S.time[cur.act] || 0) + 5; save();
+}, 5000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') beatLoop(); });
+
+/* Heartbeat trace beside the heart: scrolls at the narrator's current pulse. */
+(() => {
+  const c = document.createElement('canvas');
+  c.className = 'ecg'; c.width = 128; c.height = 48; c.setAttribute('aria-hidden', 'true');
+  $('#heartIco').after(c);
+  const g = c.getContext('2d'), pts = new Array(64).fill(0);
+  let phase = 0, last = performance.now(), color = '#d23a2e', colorAt = 0;
+  const shape = p => p < .04 ? -.12 : p < .08 ? 1 : p < .12 ? -.42 : (p > .3 && p < .42) ? .2 * Math.sin((p - .3) / .12 * Math.PI) : 0;
+  const draw = () => {
+    g.clearRect(0, 0, 128, 48);
+    g.strokeStyle = color; g.lineWidth = 2.4; g.lineJoin = 'round'; g.shadowColor = color; g.shadowBlur = 6;
+    g.beginPath(); pts.forEach((v, i) => { const x = i * 2, y = 30 - v * 22; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  };
+  if (RM) { for (let i = 0; i < 64; i++) pts[i] = shape((i / 40) % 1); draw(); return; }
+  const frame = now => {
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (document.visibilityState === 'visible' && c.offsetParent) {
+      if (now - colorAt > 1000) { color = getComputedStyle(document.documentElement).getPropertyValue('--blood-hi').trim() || color; colorAt = now; }
+      phase += dt * S.bpm / 60; pts.shift(); pts.push(shape(phase % 1)); draw();
+    }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+})();
+
+/* Dust drifting through the candlelight. Light enough for school Chromebooks: ~40 motes at 30 fps. */
+(() => {
+  if (RM) return;
+  const c = document.createElement('canvas'); c.id = 'dust'; c.setAttribute('aria-hidden', 'true');
+  $('.bg-candle').after(c);
+  const g = c.getContext('2d'); let w, h, dpr;
+  const resize = () => { dpr = Math.min(1.5, window.devicePixelRatio || 1); w = innerWidth; h = innerHeight; c.width = w * dpr; c.height = h * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  resize(); window.addEventListener('resize', resize);
+  const motes = Array.from({length:40}, () => ({x:Math.random(), y:Math.random(), r:.6 + Math.random() * 1.6, vx:(Math.random() - .5) * .006, vy:-(.004 + Math.random() * .01), tw:Math.random() * 6.28}));
+  let last = 0;
+  const frame = now => {
+    requestAnimationFrame(frame);
+    if (now - last < 33 || document.visibilityState !== 'visible') return;
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    g.clearRect(0, 0, w, h);
+    for (const m of motes) {
+      m.x += m.vx * dt * 6; m.y += m.vy * dt * 6; m.tw += dt * 1.5;
+      if (m.y < -.02) { m.y = 1.02; m.x = Math.random(); }
+      if (m.x < -.02) m.x = 1.02; else if (m.x > 1.02) m.x = -.02;
+      const dx = m.x - .5, dy = m.y - .2, light = Math.max(0, 1 - Math.hypot(dx * 1.4, dy * 1.8));
+      const a = (.08 + light * .45) * (.6 + .4 * Math.sin(m.tw));
+      g.fillStyle = `rgba(240,200,130,${a.toFixed(3)})`;
+      g.beginPath(); g.arc(m.x * w, m.y * h, m.r, 0, 6.283); g.fill();
+    }
+  };
+  requestAnimationFrame(frame);
+})();
+
+save();
+try { updateHud(); S.name ? renderHub() : renderTitle(); }
+catch (e) {
+  main.innerHTML = `<section class="room"><h2>The house is in disarray</h2><p class="muted" style="margin:10px 0 16px">This browser’s saved game could not be opened. Starting fresh will erase it.</p><button class="btn btn-primary" id="fixSave">Start fresh</button></section>`;
+  $('#fixSave').onclick = () => { try { localStorage.removeItem(KEY); } catch (err) {} location.reload(); };
+}
+beatLoop();
+})();
+</script>
+</body>
+</html>
